@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html>
-<head>
+<!DOCTYPE html><html><head>
     <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
     <meta content="IE=edge" http-equiv="X-UA-Compatible">
     <title>Orientation Cube — Keep Talking and Nobody Explodes Module</title>
@@ -224,11 +222,12 @@
             var modelMatrix = new Matrix4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
             var viewMatrix = createViewMatrix(cameraPosition, cameraTarget, cameraUp);
             var modelViewMatrix = Matrix4.multiply(viewMatrix, modelMatrix);
-            var perspectiveParameters = {left: -0.5, right: 0.5, top: 0.5, bottom: -0.5, near: 10, far: 20};
+            var projectionParameters = {left: -0.5, right: 0.5, top: 0.5, bottom: -0.5, near: 10, far: 20};
             var projectionType = {
                 Orthogonal: 1,
                 Perspective: 2
             };
+            var currentProjectionMode = projectionType.Perspective;
             function createProjectionMatrix(Type, Parameters){
                 let projectionMat;
                 switch (Type){
@@ -236,10 +235,11 @@
                         projectionMat = new Matrix4(Parameters.near / Parameters.right, 0, 0, 0, 0, Parameters.near / Parameters. top, 0, 0, 0, 0, -(Parameters.far + Parameters.near) / (Parameters.far - Parameters.near), -1, 0, 0, -2 * Parameters.far * Parameters.near / (Parameters.far - Parameters.near), 0);
                         break;
                     default: //Setting orthogonal projection as a default case
+                        projectionMat = new Matrix4(-1 / Parameters.right, 0, 0, 0, 0, -1 / Parameters.top, 0, 0, 0, 0, 2 / (Parameters.near - Parameters.far), 0, 0, 0, -(Parameters.far + Parameters.near) / (Parameters.far - Parameters.near), 1);
                 }
                 return projectionMat;
             }
-            var projectionMatrix = createProjectionMatrix(projectionType.Perspective, perspectiveParameters);
+            var projectionMatrix = createProjectionMatrix(currentProjectionMode, projectionParameters);
             var modelViewProjectionMatrix  = Matrix4.multiply(projectionMatrix, modelViewMatrix);
             class Dot {
                 constructor(x, y, z){
@@ -535,32 +535,69 @@
                 let currentActiveFunction = setInterval(function(){
                     updateModelMatrix(incrementalRotationMatrix, modelMatrix);
                     render();
-                    if (count >= 30){
+                    drawCompass();
+                    if (count >= 90 / theta){
                         clearInterval(currentActiveFunction);
                         updateModelMatrix(finalRotationMatrix, previousModelMatrix);
                         render();
+                        drawCompass();
                         rotating = false;
                     }
                     count++;
                 }, 50);
             }
+            function drawCompass(){
+                ctx.beginPath();
+                ctx.moveTo((7 / 8) * width - (1 / 16) * width - 11, (1 / 8) * height - (1 / 32) * height - 12);
+                ctx.lineTo((7 / 8) * width + (1 / 16) * width + 11, (1 / 8) * height - (1 / 32) * height - 12);
+                ctx.lineTo((7 / 8) * width + (1 / 16) * width + 11, (1 / 8) * height + (1 / 32) * height + 12);
+                ctx.lineTo((7 / 8) * width - (1 / 16) * width - 11, (1 / 8) * height + (1 / 32) * height + 12);
+                ctx.closePath();
+                ctx.fillStyle = "white";
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo((7 / 8) * width - (1 / 16) * width, (1 / 8) * height - (1 / 32) * height);
+                ctx.lineTo((7 / 8) * width + (1 / 16) * width, (1 / 8) * height + (1 / 32) * height);
+                ctx.moveTo((7 / 8) * width + (1 / 16) * width, (1 / 8) * height - (1 / 32) * height);
+                ctx.lineTo((7 / 8) * width - (1 / 16) * width, (1 / 8) * height + (1 / 32) * height);
+                ctx.lineWidth = "2";
+                ctx.stroke();
+                ctx.fillStyle = "black";
+                ctx.font = "12px Special Elite";
+                ctx.fillText("L", (7 / 8) * width - (1 / 16) * width - (3 / 64) * width, (1 / 8) * height - (1 / 32) * height - (1 / 64) * height);
+                ctx.fillText("R", (7 / 8) * width + (1 / 16) * width + (3 / 256) * width, (1 / 8) * height + (1 / 32) * height + (3 / 64) * height);
+                ctx.fillText("B", (7 / 8) * width + (1 / 16) * width + (3 / 256) * width, (1 / 8) * height - (1 / 32) * height - (1 / 64) * height);
+                ctx.fillText("F", (7 / 8) * width - (1 / 16) * width - (3 / 64) * width, (1 / 8) * height + (1 / 32) * height + (3 / 64) * height);
+            }
+            drawCompass();
             $("#rotatePositiveX").click(() => {
-                setupRotation(3, rotationType.CW_X);
+                setupRotation(6, rotationType.CW_X);
             });
             $("#rotatePositiveY").click(() => {
-                setupRotation(3, rotationType.CW_Y);
+                setupRotation(6, rotationType.CW_Y);
             });
             $("#rotatePositiveZ").click(() => {
-                setupRotation(3, rotationType.CW_Z);
+                setupRotation(6, rotationType.CW_Z);
             });
             $("#rotateNegativeX").click(() => {
-              setupRotation(3, rotationType.CCW_X);
+                setupRotation(6, rotationType.CCW_X);
             });
             $("#rotateNegativeY").click(() => {
-              setupRotation(3, rotationType.CCW_Y);
+                setupRotation(6, rotationType.CCW_Y);
             });
             $("#rotateNegativeZ").click(() => {
-              setupRotation(3, rotationType.CCW_Z);
+                setupRotation(6, rotationType.CCW_Z);
+            });
+            $("#projection").change(function(){
+                let selectedOption = $(this).children("option:selected").val();
+                if (selectedOption == 2)
+                    currentProjectionMode = projectionType.Perspective;
+                else
+                    currentProjectionMode = projectionType.Orthogonal;
+                projectionMatrix = createProjectionMatrix(currentProjectionMode, projectionParameters);
+                updateModelViewProjectionMatrix(projectionMatrix, modelViewMatrix);
+                render();
+                drawCompass();
             });
         });
     </script>
@@ -682,10 +719,14 @@
                     <button id="rotateNegativeY">CCW about Top</button>
                     <button id="rotatePositiveZ">CW about Front</button>
                     <button id="rotateNegativeZ">CCW about Front</button>
+                    <label for="projection">Projection:</label>
+                    <select id="projection">
+                        <option value=2>Perspective</option>
+                        <option value=1>Orthogonal</option>
+                    </select>
                 </div>
                 <div class="page-footer relative-footer">Page 3 of 3</div>
             </div>
         </div>
     </div>
-</body>
-</html>
+</body></html>
