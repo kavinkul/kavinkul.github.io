@@ -1,0 +1,76 @@
+<!DOCTYPE html><html><head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <title>Orientation Cube — Keep Talking and Nobody Explodes Module</title>
+    <meta content="initial-scale=1" name="viewport">
+    <link rel="stylesheet" type="text/css" href="css/font.css">
+    <link href="css/normalize.css" rel="stylesheet" type="text/css">
+    <link href="css/main.css" rel="stylesheet" type="text/css">
+	<link href="css/mathquill.css" rel="stylesheet" type="text/css">
+    <script src="js/ktane-utils.js"></script>
+    <script src="js/jquery.3.1.1.min.js"></script>
+	<script src="js/mathquill.min.js"></script>
+    <script>
+        $(function(){
+			function removeSpaces(inLatex){
+				return inLatex.replace(/\\\s/gi, "");
+			}
+			function parseTrigAndHyperbolic(inLatex){
+				return inLatex.replace(/\\((sin|cos|tan|csc|sec|cot)h?)/gi, "$1");
+			}
+			function removeOperatorName(inLatex){
+				return inLatex.replace(/\\operatorname/gi, "");
+			}
+			function convertFraction(inLatex){
+				return inLatex.replace(/\\frac\{(.*)\}\{(.*)\}/gi, "($1/$2)");
+			}
+			function removeLatexBraces(inLatex){
+				return inLatex.replace(/\{|\}/gi, "");
+			}
+			function latexToText(inLatex){
+				let parsingTex = inLatex;
+				let innerRegex = /\\{.*/gi;
+				let matches = innerRegex.exec(parsingTex);
+				parsingTex.replace(/\{(.*)/gi, "$1")
+				if (matches !== null)
+					//latexToText(matches[0]);
+				parsingTex = removeSpaces(parsingTex);
+				parsingTex = parseTrigAndHyperbolic(parsingTex);
+				parsingTex = removeOperatorName(parsingTex);
+				parsingTex = convertFraction(parsingTex);
+				parsingTex = removeLatexBraces(parsingTex);
+				return parsingTex;
+			}
+            var mathBoxSpan = document.getElementById('mathBox');
+			var latexBoxSpan = document.getElementById('latexBox');
+			var parsedLatexBoxSpan = document.getElementById('parsedLatexBox');
+			
+			var MQ = MathQuill.getInterface(2);
+			var mathField = MQ.MathField(mathBoxSpan, {
+				handlers: {
+					edit: function() {
+						latexBoxSpan.textContent = latexToText(mathField.latex());
+					}
+				}
+			});
+        });
+    </script>
+</head>
+<body>
+    <div id="ManualContent">
+        <div class="section">
+            <div class="page page-bg-01">
+                <div class="page-header">
+                    <span class="page-header-doc-title">Keep Talking and Nobody Explodes Mod</span>
+                    <span class="page-header-section-title">Orientation Cube</span>
+                </div>
+                <div class="page-content">
+                    <p>Sample: <span id="mathBox"></span></p>
+					<p>Sample LaTeX: <span id="latexBox"></span></p>
+					<p>Parsed Latex: <span id="parsedLatexBox"></span></p>
+                </div>
+                <div class="page-footer relative-footer">Page 1 of 1</div>
+            </div>
+        </div>
+    </div>
+</body></html>
