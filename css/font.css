@@ -63,7 +63,7 @@
   font-style: normal;
   font-weight: 1600;
   font-size: 28pt;
-  src: url(../font/AudioKeypadFont.ttf);
+  src: url(../font/AudioKeypadFont.ttf) format("truetype");
 }
 @font-face {
   font-family: 'Georgia';
