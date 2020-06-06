@@ -603,131 +603,131 @@
     </script>
 </head>
 <body>
-    <div class="section">
-        <div class="page page-bg-02">
-            <div class="page-header">
-                <span class="page-header-doc-title">Keep Talking and Nobody Explodes Mod</span>
-                <span class="page-header-section-title">Orientation Cube</span>
-            </div>
-            <div class="page-content">
-                <img class="diagram" src="img/Component/Orientation Cube.svg">
-                <h2>On the Subject of Orientation Cube</h2>
-
-                <p class="flavour-text">If the bomb doesn’t kill us a brain haemorrhage will.</p>
-
-                <p>
-                    In order to defuse this part of the bomb you will need good
-                    3D orientation skills. A virtual cube needs to be rotated
-                    into a specific orientation using the four keys along the bottom.
-                    Unfortunately there is no display to indicate the
-                    current orientation of the virtual cube so you will have to
-                    imagine the state of the cube yourself.</p>
-
-                <p>
-                    The two keys in the bottom left will yaw the cube clockwise or
-                    anti-clockwise, respective to looking at the cube from the top.</p>
-
-                <p>
-                    The two keys in the bottom right will roll the cube clockwise
-                    or anti-clockwise, respective to the virtual observer. The virtual
-                    observer’s position is indicated on the module as an eye.
-                    <em>NOTE: The virtual observer’s position may change.</em></p>
-
-                <p>
-                    For example, if the eye is at the bottom then it is facing the
-                    ‘FRONT’ face. Pressing ‘Roll clockwise’ will place the ‘LEFT’
-                    face where the ‘TOP’ face is.
-
-                <img class="diagram-left" src="img/Orientation Cube/top.svg">
-                <img class="diagram-right" src="img/Orientation Cube/front.svg"></p>
-            </div>
-            <div class="page-footer relative-footer">Page 1 of 3</div>
-        </div>
-
-        <div class="page page-bg-02">
-            <div class="page-header">
-                <span class="page-header-doc-title">Keep Talking and Nobody Explodes Mod</span>
-                <span class="page-header-section-title">Orientation Cube</span>
-            </div>
-            <div class="page-content">
-
-                <h3>If the serial number on the bomb contains the letter R:</h3>
-
-                <p>
-                    Rotate the cube so that the initial left face is in the same
-                    position as the initial top face, then press the SET button.</p>
-
-                <h3>Otherwise, if the bomb has a lit indicator with the label TRN
-                    <strong>OR</strong> it has a lit/unlit indicator with the label CAR:</h3>
-
-                <p>
-                    Rotate the cube so that the initial bottom face is in the same
-                    position as the initial right face, then press the SET button.</p>
-
-                <h3>Otherwise, if the bomb has a PS2 port <strong>OR</strong> there have been one or more strikes:</h3>
-
-                <p>
-                    Rotate the cube so that the initial bottom face is in the same
-                    position as the initial front face and the initial left face
-                    is in the same position as the initial bottom face, then press
-                    the SET button.</p>
-
-                <h3>Otherwise, if the serial number on the bomb contains either the number 7 or 8:</h3>
-
-                <p>
-                    Rotate the cube so that the initial right face is in the same position as the
-                    initial bottom face and the initial back face is in the same position as the
-                    initial front face, then press the SET button.</p>
-
-                <h3>Otherwise, if there are more than two batteries on the bomb
-                    <strong>OR</strong> the virtual observer’s initial position is facing the initial left face:</h3>
-
-                <p>
-                    Rotate the cube so that the initial top face is in the same
-                    position as the initial bottom face, then press the SET button.</p>
-
-                <h3>Otherwise:</h3>
-
-                <p>
-                    Rotate the cube so that the initial top face is in the same
-                    position as the initial left face, then press the SET button.</p>
-
-                <h3>On a strike:</h3>
-
-                <p>
-                    If you get strike then the virtual cube will be reset to the
-                    initial position. Be aware you may need to select a new rule
-                    if the observer is now in a different position.</p>
-
-            </div>
-            <div class="page-footer relative-footer">Page 2 of 3</div>
-        </div>
-        <div class="page page-bg-03">
-            <div class="page-header">
-                <span class="page-header-doc-title">Keep Talking and Nobody Explodes Mod</span>
-                <span class="page-header-section-title">Orientation Cube</span>
-            </div>
-            <div class="page-content">
-                <h2>The Virtual Cube</h2>
-                <div style="text-align: center;">
-                    <canvas width = "220" height = "220" id="cubeCanvas"></canvas>
+    <div id="ManualContent">
+        <div class="section">
+            <div class="page page-bg-02">
+                <div class="page-header">
+                    <span class="page-header-doc-title">Keep Talking and Nobody Explodes Mod</span>
+                    <span class="page-header-section-title">Orientation Cube</span>
                 </div>
-                <button id="rotatePositiveX">CW about Right</button>
-                <button id="rotateNegativeX">CCW about Right</button>
-                <button id="rotatePositiveY">CW about Top</button>
-                <button id="rotateNegativeY">CCW about Top</button>
-                <button id="rotatePositiveZ">CW about Front</button>
-                <button id="rotateNegativeZ">CCW about Front</button>
-                <label for="projection">Projection:</label>
-                <select id="projection">
-                    <option value=2>Perspective</option>
-                    <option value=1>Orthogonal</option>
-                </select>
-                <h2>Test Audio Keypad</h2>
-				<p style="font-family: 'AudioKeypadFont'; font-size: 30pt;">(</p>
+                <div class="page-content">
+                    <img class="diagram" src="img/Component/Orientation Cube.svg">
+                    <h2>On the Subject of Orientation Cube</h2>
+
+                    <p class="flavour-text">If the bomb doesn’t kill us a brain haemorrhage will.</p>
+
+                    <p>
+                        In order to defuse this part of the bomb you will need good
+                        3D orientation skills. A virtual cube needs to be rotated
+                        into a specific orientation using the four keys along the bottom.
+                        Unfortunately there is no display to indicate the
+                        current orientation of the virtual cube so you will have to
+                        imagine the state of the cube yourself.</p>
+
+                    <p>
+                        The two keys in the bottom left will yaw the cube clockwise or
+                        anti-clockwise, respective to looking at the cube from the top.</p>
+
+                    <p>
+                        The two keys in the bottom right will roll the cube clockwise
+                        or anti-clockwise, respective to the virtual observer. The virtual
+                        observer’s position is indicated on the module as an eye.
+                        <em>NOTE: The virtual observer’s position may change.</em></p>
+
+                    <p>
+                        For example, if the eye is at the bottom then it is facing the
+                        ‘FRONT’ face. Pressing ‘Roll clockwise’ will place the ‘LEFT’
+                        face where the ‘TOP’ face is.
+
+                    <img class="diagram-left" src="img/Orientation Cube/top.svg">
+                    <img class="diagram-right" src="img/Orientation Cube/front.svg"></p>
+                </div>
+                <div class="page-footer relative-footer">Page 1 of 3</div>
             </div>
-            <div class="page-footer relative-footer">Page 3 of 3</div>
+
+            <div class="page page-bg-02">
+                <div class="page-header">
+                    <span class="page-header-doc-title">Keep Talking and Nobody Explodes Mod</span>
+                    <span class="page-header-section-title">Orientation Cube</span>
+                </div>
+                <div class="page-content">
+
+                    <h3>If the serial number on the bomb contains the letter R:</h3>
+
+                    <p>
+                        Rotate the cube so that the initial left face is in the same
+                        position as the initial top face, then press the SET button.</p>
+
+                    <h3>Otherwise, if the bomb has a lit indicator with the label TRN
+                        <strong>OR</strong> it has a lit/unlit indicator with the label CAR:</h3>
+
+                    <p>
+                        Rotate the cube so that the initial bottom face is in the same
+                        position as the initial right face, then press the SET button.</p>
+
+                    <h3>Otherwise, if the bomb has a PS2 port <strong>OR</strong> there have been one or more strikes:</h3>
+
+                    <p>
+                        Rotate the cube so that the initial bottom face is in the same
+                        position as the initial front face and the initial left face
+                        is in the same position as the initial bottom face, then press
+                        the SET button.</p>
+
+                    <h3>Otherwise, if the serial number on the bomb contains either the number 7 or 8:</h3>
+
+                    <p>
+                        Rotate the cube so that the initial right face is in the same position as the
+                        initial bottom face and the initial back face is in the same position as the
+                        initial front face, then press the SET button.</p>
+
+                    <h3>Otherwise, if there are more than two batteries on the bomb
+                        <strong>OR</strong> the virtual observer’s initial position is facing the initial left face:</h3>
+
+                    <p>
+                        Rotate the cube so that the initial top face is in the same
+                        position as the initial bottom face, then press the SET button.</p>
+
+                    <h3>Otherwise:</h3>
+
+                    <p>
+                        Rotate the cube so that the initial top face is in the same
+                        position as the initial left face, then press the SET button.</p>
+
+                    <h3>On a strike:</h3>
+
+                    <p>
+                        If you get strike then the virtual cube will be reset to the
+                        initial position. Be aware you may need to select a new rule
+                        if the observer is now in a different position.</p>
+
+                </div>
+                <div class="page-footer relative-footer">Page 2 of 3</div>
+            </div>
+            <div class="page page-bg-03">
+                <div class="page-header">
+                    <span class="page-header-doc-title">Keep Talking and Nobody Explodes Mod</span>
+                    <span class="page-header-section-title">Orientation Cube</span>
+                </div>
+                <div class="page-content">
+                    <h2>The Virtual Cube</h2>
+                    <div style="text-align: center;">
+                        <canvas width = "220" height = "220" id="cubeCanvas"></canvas>
+                    </div>
+                    <button id="rotatePositiveX">CW about Right</button>
+                    <button id="rotateNegativeX">CCW about Right</button>
+                    <button id="rotatePositiveY">CW about Top</button>
+                    <button id="rotateNegativeY">CCW about Top</button>
+                    <button id="rotatePositiveZ">CW about Front</button>
+                    <button id="rotateNegativeZ">CCW about Front</button>
+                    <label for="projection">Projection:</label>
+                    <select id="projection">
+                        <option value=2>Perspective</option>
+                        <option value=1>Orthogonal</option>
+                    </select>
+                    <a href="index2.html">Hypercube Test</a>
+                </div>
+                <div class="page-footer relative-footer">Page 3 of 3</div>
+            </div>
         </div>
     </div>
-</body>
-</html>
+</body></html>
