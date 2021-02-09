@@ -697,7 +697,7 @@
                     .appendTo(elem);
 
                 let button = $("<a href='#' class='play-button'>▶</a>")
-                    .on('click', function() {
+                    .click(function() {
                         if (button.hasClass("playing")) {
                             button.removeClass("playing");
                             audio[0].pause();
