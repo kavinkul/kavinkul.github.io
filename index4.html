@@ -4,7 +4,7 @@
     <title>3D Rendering</title>
 </head>
 <body>
-    <img id="testImage" src="img/testIMG.png" width="20" height="20" />
+    <img id="testImage" src="img/drawing.png" width="0" height="0" />
     <canvas id="3DRendering" width="800" height="600">Your browser does not support HTML5.</canvas>
     <script src="js/gl-matrix-min.js"></script>
     <script>
@@ -86,10 +86,10 @@
             var boxVertices = 
             [ // X, Y, Z           U, V
                 // Top
-                -1.0, 1.0, -1.0,   0, 0,
-                -1.0, 1.0, 1.0,    0, 1,
-                1.0, 1.0, 1.0,     1, 1,
-                1.0, 1.0, -1.0,    1, 0,
+                -1.0, 1.0, -1.0,   0.5, 0.25,
+                -1.0, 1.0, 1.0,    0.5, 0.5,
+                1.0, 1.0, 1.0,     0.75, 0.5,
+                1.0, 1.0, -1.0,    0.75, 0.25,
             
                 // Left
                 -1.0, 1.0, 1.0,    0, 0,
