@@ -243,7 +243,6 @@ function GLInit(canvas) {
         0.75, -3.0, 0.0,    0.115, 0.96875,
         -0.75, -3.0, 0.0,   0.115, 0.78125,
         0.0, -3.5, 0.0,     0.25, 0.875,
-        
     ];
     
     var baseArrowIndices = [
@@ -365,8 +364,6 @@ function GLInit(canvas) {
         requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
-    
-    gl.drawElements(gl.TRIANGLES, boxIndices.length, gl.UNSIGNED_SHORT, 0);
     
     var drag = false;
     var dragStart;
