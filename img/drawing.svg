@@ -17,8 +17,8 @@
    inkscape:version="0.92.4 (5da689c313, 2019-01-14)"
    sodipodi:docname="drawing.svg"
    inkscape:export-filename="C:\Users\Kavin\AppData\Roaming\SPB_Data\kavinkul.github.io\img\drawing.png"
-   inkscape:export-xdpi="96"
-   inkscape:export-ydpi="96">
+   inkscape:export-xdpi="128"
+   inkscape:export-ydpi="128">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -30,7 +30,7 @@
      inkscape:pageshadow="2"
      inkscape:zoom="0.98994949"
      inkscape:cx="348.20393"
-     inkscape:cy="182.08804"
+     inkscape:cy="141.68194"
      inkscape:document-units="mm"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -83,7 +83,9 @@
        width="33.6185"
        height="33.6185"
        x="-64.678284"
-       y="154.79552" />
+       y="154.79552"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96" />
     <rect
        style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.24816805;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
        id="rect5441-5-2"
@@ -123,24 +125,26 @@
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.05555534px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="-14.343431"
-       y="140.30298"
-       id="text5499-7"><tspan
+       x="-48.210098"
+       y="174.16965"
+       id="text5499-7"
+       inkscape:export-xdpi="96"
+       inkscape:export-ydpi="96"><tspan
          sodipodi:role="line"
          id="tspan5497-8"
-         x="-14.343431"
-         y="140.30298"
+         x="-48.210098"
+         y="174.16965"
          style="stroke-width:0.26458332">FRONT</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.05555534px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       x="-48.210098"
-       y="174.1662"
+       x="-14.343431"
+       y="140.29953"
        id="text5499-83"><tspan
          sodipodi:role="line"
          id="tspan5497-50"
-         x="-48.210098"
-         y="174.1662"
+         x="-14.343431"
+         y="140.29953"
          style="stroke-width:0.26458332">RIGHT</tspan></text>
     <text
        xml:space="preserve"
