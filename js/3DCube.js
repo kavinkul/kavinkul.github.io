@@ -437,6 +437,32 @@ async function GLInit(canvas) {
     gl.uniformMatrix4fv(icosphereMatProjUniformLocation, gl.FALSE, projMatrix);
     
     //Render functions
+    
+    var t1 = 0;
+    var t2 = performance.now()
+    var isBoxRotation = false;
+    var isClockwise = false;
+    var isRelativeToEye = false;
+    var angle = 0;
+    var totalAngle = 0; 
+    var startingWorldMatrix = new Float32Array(16);
+    var topCounterClockwiseMat = glMatrix.mat4.fromValues(0, 0, -1, 0,
+                                                          0, 1, 0, 0,
+                                                          1, 0, 0, 0,
+                                                          0, 0, 0, 1);
+    var topClockwiseMat = glMatrix.mat4.fromValues(0, 0, 1, 0,
+                                                   0, 1, 0, 0,
+                                                  -1, 0, 0, 0,
+                                                   0, 0, 0, 1);
+    var frontCounterClockwiseMat = glMatrix.mat4.fromValues(0, 1, 0, 0,
+                                                           -1, 0, 0, 0,
+                                                            0, 0, 1, 0,
+                                                            0, 0, 0, 1);
+    var frontClockwiseMat = glMatrix.mat4.fromValues(0, -1, 0, 0,
+                                                     1, 0, 0, 0,
+                                                     0, 0, 1, 0,
+                                                     0, 0, 0, 1);
+
     function renderBoxAndArrow() {
         gl.useProgram(program);
         gl.vertexAttribPointer(
@@ -455,10 +481,132 @@ async function GLInit(canvas) {
             5 * Float32Array.BYTES_PER_ELEMENT, // Size of an individual vertex
             3 * Float32Array.BYTES_PER_ELEMENT// Offset from the beginning of a single vertex to this attribute
         );
-        let angle = performance.now() / 1000 / 6 * 2 * Math.PI;
-        glMatrix.mat4.rotate(yRotationMatrix, identityMatrix, angle, [0, 1, 0]);
-        glMatrix.mat4.rotate(xRotationMatrix, identityMatrix, angle / 4, [1, 0, 0]);
-        glMatrix.mat4.mul(boxWorldMatrix, yRotationMatrix, xRotationMatrix);
+        
+        t1 = t2;
+        t2 = performance.now();
+        
+        if (isBoxRotation) {
+            if (!isRelativeToEye) {
+                if (!isClockwise) {
+                    angle = (t2 - t1) / 1000 * 2 * Math.PI;
+                    totalAngle += angle;
+                    
+                    if (totalAngle < Math.PI / 2) {
+                        let inverseWorld = new Float32Array(16);
+                        glMatrix.mat4.invert(inverseWorld, boxWorldMatrix);
+                        let rotationAxis = new Float32Array(3);
+                        glMatrix.vec3.transformMat4(rotationAxis, [0, 1, 0], inverseWorld);
+                        glMatrix.mat4.rotate(boxWorldMatrix, boxWorldMatrix, angle, rotationAxis);
+                    }
+                    else {
+                        isBoxRotation = false;
+                        totalAngle = 0;
+                        
+                        glMatrix.mat4.copy(boxWorldMatrix, startingWorldMatrix);
+                        
+                        glMatrix.mat4.mul(boxWorldMatrix, topCounterClockwiseMat, boxWorldMatrix);
+                    }
+                }
+                else {
+                    angle = (t1 - t2) / 1000 * 2 * Math.PI;
+                    totalAngle += angle;
+                    
+                    if (totalAngle > -Math.PI / 2) {
+                        let inverseWorld = new Float32Array(16);
+                        glMatrix.mat4.invert(inverseWorld, boxWorldMatrix);
+                        let rotationAxis = new Float32Array(3);
+                        glMatrix.vec3.transformMat4(rotationAxis, [0, 1, 0], inverseWorld);
+                        glMatrix.mat4.rotate(boxWorldMatrix, boxWorldMatrix, angle, rotationAxis);
+                    }
+                    else {
+                        isBoxRotation = false;
+                        totalAngle = 0;
+                        
+                        glMatrix.mat4.copy(boxWorldMatrix, startingWorldMatrix);
+
+                        glMatrix.mat4.mul(boxWorldMatrix, topClockwiseMat, boxWorldMatrix);
+                    }
+                }
+            }
+            else {
+                if (!isClockwise) {
+                    angle = (t2 - t1) / 1000 * 2 * Math.PI;
+                    totalAngle += angle;
+                    
+                    let axis = new Float32Array(3);
+                    
+                    glMatrix.mat4.getTranslation(axis, icosphereWorldMatrix);
+                    let length = glMatrix.vec3.len(axis);
+                    
+                    glMatrix.vec3.scale(axis, axis, 1 / length);
+                    
+                    if (totalAngle < Math.PI / 2) {
+                        let inverseWorld = new Float32Array(16);
+                        glMatrix.mat4.invert(inverseWorld, boxWorldMatrix);
+                        let rotationAxis = new Float32Array(3);
+                        glMatrix.vec3.transformMat4(rotationAxis, axis, inverseWorld);
+                        glMatrix.mat4.rotate(boxWorldMatrix, boxWorldMatrix, angle, rotationAxis);
+                    }
+                    else {
+                        isBoxRotation = false;
+                        totalAngle = 0;
+                        
+                        glMatrix.mat4.copy(boxWorldMatrix, startingWorldMatrix);
+                         
+                        let originalAxis = glMatrix.vec3.clone(axis);
+                        while (!glMatrix.vec3.equals(axis, [0, 0, 1])) {
+                            glMatrix.vec3.transformMat4(axis, axis, topCounterClockwiseMat);
+                            glMatrix.mat4.mul(boxWorldMatrix, topCounterClockwiseMat, boxWorldMatrix);
+                        }
+                        
+                        glMatrix.mat4.mul(boxWorldMatrix, frontCounterClockwiseMat, boxWorldMatrix);
+                        
+                        while (!glMatrix.vec3.equals(axis, originalAxis)) {
+                             glMatrix.vec3.transformMat4(axis, axis, topClockwiseMat);
+                             glMatrix.mat4.mul(boxWorldMatrix, topClockwiseMat, boxWorldMatrix);
+                        }
+                    }
+                }
+                else {
+                    angle = (t1 - t2) / 1000 * 2 * Math.PI;
+                    totalAngle += angle;
+                    
+                    let axis = new Float32Array(3);
+                    
+                    glMatrix.mat4.getTranslation(axis, icosphereWorldMatrix);
+                    let length = glMatrix.vec3.len(axis);
+                    
+                    glMatrix.vec3.scale(axis, axis, 1 / length);
+                    
+                    if (totalAngle > - Math.PI / 2) {
+                        let inverseWorld = new Float32Array(16);
+                        glMatrix.mat4.invert(inverseWorld, boxWorldMatrix);
+                        let rotationAxis = new Float32Array(3);
+                        glMatrix.vec3.transformMat4(rotationAxis, axis, inverseWorld);
+                        glMatrix.mat4.rotate(boxWorldMatrix, boxWorldMatrix, angle, rotationAxis);
+                    }
+                    else {
+                        isBoxRotation = false;
+                        totalAngle = 0;
+                        
+                        glMatrix.mat4.copy(boxWorldMatrix, startingWorldMatrix);
+                         
+                        let originalAxis = glMatrix.vec3.clone(axis);
+                        while (!glMatrix.vec3.equals(axis, [0, 0, 1])) {
+                            glMatrix.vec3.transformMat4(axis, axis, topCounterClockwiseMat);
+                            glMatrix.mat4.mul(boxWorldMatrix, topCounterClockwiseMat, boxWorldMatrix);
+                        }
+                        
+                        glMatrix.mat4.mul(boxWorldMatrix, frontClockwiseMat, boxWorldMatrix);
+                        
+                        while (!glMatrix.vec3.equals(axis, originalAxis)) {
+                             glMatrix.vec3.transformMat4(axis, axis, topClockwiseMat);
+                             glMatrix.mat4.mul(boxWorldMatrix, topClockwiseMat, boxWorldMatrix);
+                        }
+                    }
+                }
+            }
+        }
         
         gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, boxWorldMatrix);
         gl.uniformMatrix4fv(matViewUniformLocation, gl.FALSE, viewMatrix);
@@ -486,20 +634,11 @@ async function GLInit(canvas) {
         gl.drawElements(gl.TRIANGLES, arrowIndices.length, gl.UNSIGNED_SHORT, 0);
     }
     
-    var t1 = 0;
-    var t2 = performance.now()
+    var tIcs1 = 0;
+    var tIcs2 = performance.now()
     var isIcosphereRotation = false;
     var isEyeClockwise = false;
-    var angleIcosphere = 0;
-    var totalAngle = 0;
-    var startingWorldMatrix = new Float32Array(16);
     const constantIcosphereDistance = 5;
-    var eyeClockwiseMat = glMatrix.mat3.fromValues(0, 0, -1,
-                                                   0, 1, 0,
-                                                   1, 0, 0);
-    var eyeCounterClockwiseMat = glMatrix.mat3.fromValues(0, 0, 1,
-                                                          0, 1, 0,
-                                                         -1, 0, 0);
     
     function renderIcosphere() {
         gl.useProgram(icosphereProgram);
@@ -520,14 +659,14 @@ async function GLInit(canvas) {
             3 * Float32Array.BYTES_PER_ELEMENT// Offset from the beginning of a single vertex to this attribute
         );
         
-        t1 = t2;
-        t2 = performance.now();
+        tIcs1 = tIcs2;
+        tIcs2 = performance.now();
         
         if (isIcosphereRotation) {
-            if (isEyeClockwise) {
+            if (!isEyeClockwise) {
                 
-                angleIcosphere = (t2 - t1) / 1000 * 2 * Math.PI;
-                totalAngle += angleIcosphere;
+                angle = (tIcs2 - tIcs1) / 1000 * 2 * Math.PI;
+                totalAngle += angle;
                 
                 if (totalAngle < Math.PI) {
                     
@@ -536,7 +675,7 @@ async function GLInit(canvas) {
                     glMatrix.mat4.getTranslation(translationAxis, icosphereWorldMatrix);
                     
                     let newTranslationAxis = new Float32Array(3);
-                    glMatrix.vec3.rotateY(newTranslationAxis, translationAxis, [0, 0, 0], angleIcosphere);
+                    glMatrix.vec3.rotateY(newTranslationAxis, translationAxis, [0, 0, 0], angle);
                     glMatrix.vec3.normalize(newTranslationAxis, newTranslationAxis);
                     glMatrix.vec3.scale(newTranslationAxis, newTranslationAxis, constantIcosphereDistance);
                     glMatrix.vec3.negate(translationAxis, translationAxis);
@@ -553,7 +692,7 @@ async function GLInit(canvas) {
                     glMatrix.mat4.getTranslation(translationAxis, icosphereWorldMatrix);
                     
                     let newTranslationAxis = new Float32Array(3);
-                    glMatrix.vec3.transformMat3(newTranslationAxis, translationAxis, eyeClockwiseMat)
+                    glMatrix.vec3.transformMat4(newTranslationAxis, translationAxis, topCounterClockwiseMat)
                     glMatrix.vec3.negate(translationAxis, translationAxis);
                     glMatrix.mat4.scale(icosphereWorldMatrix, icosphereWorldMatrix, [2, 2, 2]);
                     glMatrix.mat4.translate(icosphereWorldMatrix, icosphereWorldMatrix, translationAxis);
@@ -562,8 +701,8 @@ async function GLInit(canvas) {
                 }
             }
             else {
-                angleIcosphere = (t1 - t2) / 1000 * 2 * Math.PI;
-                totalAngle += angleIcosphere;
+                angle = (tIcs1 - tIcs2) / 1000 * 2 * Math.PI;
+                totalAngle += angle;
                 
                 if (totalAngle > -Math.PI) {
                     
@@ -572,7 +711,7 @@ async function GLInit(canvas) {
                     glMatrix.mat4.getTranslation(translationAxis, icosphereWorldMatrix);
                     
                     let newTranslationAxis = new Float32Array(3);
-                    glMatrix.vec3.rotateY(newTranslationAxis, translationAxis, [0, 0, 0], angleIcosphere);
+                    glMatrix.vec3.rotateY(newTranslationAxis, translationAxis, [0, 0, 0], angle);
                     glMatrix.vec3.normalize(newTranslationAxis, newTranslationAxis);
                     glMatrix.vec3.scale(newTranslationAxis, newTranslationAxis, constantIcosphereDistance);
                     glMatrix.vec3.negate(translationAxis, translationAxis);
@@ -589,7 +728,7 @@ async function GLInit(canvas) {
                     glMatrix.mat4.getTranslation(translationAxis, icosphereWorldMatrix);
                     
                     let newTranslationAxis = new Float32Array(3);
-                    glMatrix.vec3.transformMat3(newTranslationAxis, translationAxis, eyeCounterClockwiseMat)
+                    glMatrix.vec3.transformMat4(newTranslationAxis, translationAxis, topClockwiseMat)
                     glMatrix.vec3.negate(translationAxis, translationAxis);
                     glMatrix.mat4.scale(icosphereWorldMatrix, icosphereWorldMatrix, [2, 2, 2]);
                     glMatrix.mat4.translate(icosphereWorldMatrix, icosphereWorldMatrix, translationAxis);
@@ -619,12 +758,58 @@ async function GLInit(canvas) {
     };
     requestAnimationFrame(loop);
     
+    //Box Events
+    
+    var boxTopCWButton = document.getElementById("boxTopClockwise");
+    
+    boxTopCWButton.addEventListener('click', function(event) {
+        if (isIcosphereRotation || isBoxRotation)
+            return;
+        isBoxRotation = true;
+        isRelativeToEye = false;
+        isClockwise = true;
+        glMatrix.mat4.copy(startingWorldMatrix, boxWorldMatrix);
+    });
+    
+    var boxTopCCWButton = document.getElementById("boxTopCounterClockwise");
+    
+    boxTopCCWButton.addEventListener('click', function(event) {
+        if (isIcosphereRotation || isBoxRotation)
+            return;
+        isBoxRotation = true;
+        isRelativeToEye = false;
+        isClockwise = false;
+        glMatrix.mat4.copy(startingWorldMatrix, boxWorldMatrix);
+    });
+    
+    var eyeRelativeCWButton = document.getElementById("eyeRelativeClockwise");
+    
+    eyeRelativeCWButton.addEventListener('click', function(event) {
+        if (isIcosphereRotation || isBoxRotation)
+            return;
+        isBoxRotation = true;
+        isRelativeToEye = true;
+        isClockwise = true;
+        glMatrix.mat4.copy(startingWorldMatrix, boxWorldMatrix);
+    });
+    
+    var eyeRelativeCCWButton = document.getElementById("eyeRelativeCounterClockwise");
+    
+    eyeRelativeCCWButton.addEventListener('click', function(event) {
+        if (isIcosphereRotation || isBoxRotation)
+            return;
+        isBoxRotation = true;
+        isRelativeToEye = true;
+        isClockwise = false;
+        glMatrix.mat4.copy(startingWorldMatrix, boxWorldMatrix);
+    });
+    
     //Eye Events
     
     var eyeCWButton = document.getElementById("eyeClockwise");
     
     eyeCWButton.addEventListener('click', function(event) {
-        if (isIcosphereRotation)
+        if (isIcosphereRotation || isBoxRotation)
             return;
         isIcosphereRotation = true;
         isEyeClockwise = true;
@@ -634,7 +819,7 @@ async function GLInit(canvas) {
     var eyeCWButton = document.getElementById("eyeCounterClockwise");
     
     eyeCWButton.addEventListener('click', function(event) {
-        if (isIcosphereRotation)
+        if (isIcosphereRotation || isBoxRotation)
             return;
         isIcosphereRotation = true;
         isEyeClockwise = false;
