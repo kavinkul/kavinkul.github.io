@@ -1,4 +1,7 @@
-function GLInit(canvas) {
+async function GLInit(canvas) {
+    
+    //Shaders
+    
     var vertexShaderText = [
         'precision mediump float;',
         '',
@@ -26,6 +29,34 @@ function GLInit(canvas) {
         '    gl_FragColor = texture2D(sampler, fragTexCoord);',
         '}'
     ].join('\n');
+    var icosphereVertexShaderText = [
+        'precision mediump float;',
+        '',
+        'attribute vec3 vertPosition;',
+        'attribute vec3 vertColor;',
+        'varying vec3 fragColor;',
+        'uniform mat4 mWorld;',
+        'uniform mat4 mView;',
+        'uniform mat4 mProj;',
+        '',
+        'void main()',
+        '{',
+        '    fragColor = vertColor;',
+        '    gl_Position = mProj * mView * mWorld * vec4(vertPosition, 1.0);',
+        '}'
+    ].join('\n');
+    var icosphereFragmentShaderText = [
+        'precision mediump float;',
+        '',
+        'varying vec3 fragColor;',
+        '',
+        'void main()',
+        '{',
+        '    gl_FragColor = vec4(fragColor, 1.0);',
+        '}'
+    ].join('\n');
+    
+    //Program Setup
     
     var gl = canvas.getContext('webgl');
     
@@ -43,8 +74,15 @@ function GLInit(canvas) {
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
     
+    //Shaders using textures
+    
     var vertexShader = gl.createShader(gl.VERTEX_SHADER);
     var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
+    
+    //Shaders for icosphere
+    
+    var icosphereVertexShader = gl.createShader(gl.VERTEX_SHADER);
+    var icosphereFragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
     
     gl.shaderSource(vertexShader, vertexShaderText);
     gl.shaderSource(fragmentShader, fragmentShaderText);
@@ -56,6 +94,19 @@ function GLInit(canvas) {
     gl.compileShader(fragmentShader);
     if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
         console.error("ERROR: Can't compile fragment shader.", gl.getShaderInfoLog(fragmentShader));
+        return;
+    }
+    
+    gl.shaderSource(icosphereVertexShader, icosphereVertexShaderText);
+    gl.shaderSource(icosphereFragmentShader, icosphereFragmentShaderText);
+    gl.compileShader(icosphereVertexShader);
+    if (!gl.getShaderParameter(icosphereVertexShader, gl.COMPILE_STATUS)) {
+        console.error("ERROR: Can't compile icosphere vertex shader.", gl.getShaderInfoLog(icosphereVertexShader));
+        return;
+    }
+    gl.compileShader(icosphereFragmentShader);
+    if (!gl.getShaderParameter(icosphereFragmentShader, gl.COMPILE_STATUS)) {
+        console.error("ERROR: Can't compile icosphere fragment shader.", gl.getShaderInfoLog(icosphereFragmentShader));
         return;
     }
     
@@ -72,6 +123,22 @@ function GLInit(canvas) {
         console.error("ERROR: Can't validate program.", gl.getProgramInfoLog(program));
         return;
     }
+    
+    var icosphereProgram = gl.createProgram();
+    gl.attachShader(icosphereProgram, icosphereVertexShader);
+    gl.attachShader(icosphereProgram, icosphereFragmentShader);
+    gl.linkProgram(icosphereProgram);
+    if (!gl.getProgramParameter(icosphereProgram, gl.LINK_STATUS)) {
+        console.error("ERROR: Can't link icosphereProgram.", gl.getProgramInfoLog(icosphereProgram));
+        return;
+    }
+    gl.validateProgram(icosphereProgram);
+    if (!gl.getProgramParameter(icosphereProgram, gl.VALIDATE_STATUS)) {
+        console.error("ERROR: Can't validate icosphereProgram.", gl.getProgramInfoLog(icosphereProgram));
+        return;
+    }
+    
+    //Models
     
     var boxVertices = 
     [ // X, Y, Z           U, V
@@ -262,30 +329,49 @@ function GLInit(canvas) {
             arrowIndices.push(index + 14 * i);
         });
     
-    var boxVertexBufferObject = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, boxVertexBufferObject);
+    var icosphereVertices = [];
+    var icosphereIndices = [];
     
-    var boxIndexBufferObject = gl.createBuffer();
-    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, boxIndexBufferObject);
+    //Retrieve data from object file
+    
+    var res = await fetch("js/Icosphere.obj")
+        .then(response => response.text())
+        .then(data => {
+            let allLines = data.split('\n');
+            let re1 = /v (-?\d+\.\d+) (-?\d+\.\d+) (-?\d+\.\d+)/;
+            let re2 = /f (\d+)\/\d*\/\d+ (\d+)\/\d*\/\d+ (\d+)\/\d*\/\d+/;
+            allLines.forEach(line => {
+                let matches1 = re1.exec(line);
+                let matches2 = re2.exec(line);
+                if (matches1 != null) {
+                    icosphereVertices.push(parseFloat(matches1[1]));
+                    icosphereVertices.push(parseFloat(matches1[2]));
+                    icosphereVertices.push(parseFloat(matches1[3]));
+                    icosphereVertices.push(0.0);
+                    icosphereVertices.push(0.0);
+                    icosphereVertices.push(1);
+                }
+                else if (matches2 != null)
+                {
+                    icosphereIndices.push(parseInt(matches2[1]) - 1);
+                    icosphereIndices.push(parseInt(matches2[2]) - 1);
+                    icosphereIndices.push(parseInt(matches2[3]) - 1);
+                }
+            });
+        })
+        .catch(error => console.log(error));
+    
+    //Shader with texture
+    
+    var vertexBufferObject = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBufferObject);
+    
+    var indexBufferObject = gl.createBuffer();
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBufferObject);
     
     var positionAttribLocation = gl.getAttribLocation(program, 'vertPosition');
     var texCoordAttribLocation = gl.getAttribLocation(program, 'vertTexCoord');
-    gl.vertexAttribPointer(
-        positionAttribLocation, //Attribute location
-        3, //Number of elements per attribute
-        gl.FLOAT, //Type of elements
-        gl.FALSE,
-        5 * Float32Array.BYTES_PER_ELEMENT, // Size of an individual vertex
-        0 // Offset from the beginning of a single vertex to this attribute
-    );
-    gl.vertexAttribPointer(
-        texCoordAttribLocation, //Attribute location
-        2, //Number of elements per attribute
-        gl.FLOAT, //Type of elements
-        gl.FALSE,
-        5 * Float32Array.BYTES_PER_ELEMENT, // Size of an individual vertex
-        3 * Float32Array.BYTES_PER_ELEMENT// Offset from the beginning of a single vertex to this attribute
-    );
+    
     gl.enableVertexAttribArray(positionAttribLocation);
     gl.enableVertexAttribArray(texCoordAttribLocation);
     
@@ -314,7 +400,7 @@ function GLInit(canvas) {
     var projMatrix = new Float32Array(16);
     glMatrix.mat4.identity(boxWorldMatrix);
     glMatrix.mat4.identity(arrowWorldMatrix);
-    glMatrix.mat4.lookAt(viewMatrix, [0, 0, 9], [0, 0, 0], [0, 1, 0]);
+    glMatrix.mat4.lookAt(viewMatrix, [0, 0, 10], [0, 0, 0], [0, 1, 0]);
     glMatrix.mat4.perspective(projMatrix, glMatrix.glMatrix.toRadian(45), canvas.width / canvas.height, 0.1, 1000.0);
     
     gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, boxWorldMatrix);
@@ -326,9 +412,50 @@ function GLInit(canvas) {
     
     var identityMatrix = new Float32Array(16);
     glMatrix.mat4.identity(identityMatrix);
-    var angle = 0;
-    var loop = function () {
-        angle = performance.now() / 1000 / 6 * 2 * Math.PI;
+    
+    //Shader for icosphere
+    
+    var icospherePositionAttribLocation = gl.getAttribLocation(icosphereProgram, 'vertPosition');
+    var icosphereVertColorAttribLocation = gl.getAttribLocation(icosphereProgram, 'vertColor');
+    gl.enableVertexAttribArray(icospherePositionAttribLocation);
+    gl.enableVertexAttribArray(icosphereVertColorAttribLocation);
+    
+    gl.useProgram(icosphereProgram);
+    
+    var icosphereMatWorldUniformLocation = gl.getUniformLocation(icosphereProgram, 'mWorld');
+    var icosphereMatViewUniformLocation = gl.getUniformLocation(icosphereProgram, 'mView');
+    var icosphereMatProjUniformLocation = gl.getUniformLocation(icosphereProgram, 'mProj');
+    
+    var icosphereWorldMatrix = new Float32Array(16);
+    glMatrix.mat4.identity(icosphereWorldMatrix);
+    
+    glMatrix.mat4.scale(icosphereWorldMatrix, icosphereWorldMatrix, [0.5, 0.5, 0.5])
+    glMatrix.mat4.translate(icosphereWorldMatrix, icosphereWorldMatrix, [0, 0, 10]);
+    
+    gl.uniformMatrix4fv(icosphereMatWorldUniformLocation, gl.FALSE, icosphereWorldMatrix);
+    gl.uniformMatrix4fv(icosphereMatViewUniformLocation, gl.FALSE, viewMatrix);
+    gl.uniformMatrix4fv(icosphereMatProjUniformLocation, gl.FALSE, projMatrix);
+    
+    //Render functions
+    function renderBoxAndArrow() {
+        gl.useProgram(program);
+        gl.vertexAttribPointer(
+            positionAttribLocation, //Attribute location
+            3, //Number of elements per attribute
+            gl.FLOAT, //Type of elements
+            gl.FALSE,
+            5 * Float32Array.BYTES_PER_ELEMENT, // Size of an individual vertex
+            0 // Offset from the beginning of a single vertex to this attribute
+        );
+        gl.vertexAttribPointer(
+            texCoordAttribLocation, //Attribute location
+            2, //Number of elements per attribute
+            gl.FLOAT, //Type of elements
+            gl.FALSE,
+            5 * Float32Array.BYTES_PER_ELEMENT, // Size of an individual vertex
+            3 * Float32Array.BYTES_PER_ELEMENT// Offset from the beginning of a single vertex to this attribute
+        );
+        let angle = performance.now() / 1000 / 6 * 2 * Math.PI;
         glMatrix.mat4.rotate(yRotationMatrix, identityMatrix, angle, [0, 1, 0]);
         glMatrix.mat4.rotate(xRotationMatrix, identityMatrix, angle / 4, [1, 0, 0]);
         glMatrix.mat4.mul(boxWorldMatrix, yRotationMatrix, xRotationMatrix);
@@ -336,9 +463,6 @@ function GLInit(canvas) {
         gl.uniformMatrix4fv(matWorldUniformLocation, gl.FALSE, boxWorldMatrix);
         gl.uniformMatrix4fv(matViewUniformLocation, gl.FALSE, viewMatrix);
         
-        gl.clearColor(0.75, 0.85, 0.8, 1.0);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_WIDTH_BIT);
-
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(boxVertices), gl.STATIC_DRAW);
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(boxIndices), gl.STATIC_DRAW);
         gl.bindTexture(gl.TEXTURE_2D, boxTexture);
@@ -360,10 +484,165 @@ function GLInit(canvas) {
             document.getElementById("testImage2")
         );
         gl.drawElements(gl.TRIANGLES, arrowIndices.length, gl.UNSIGNED_SHORT, 0);
+    }
+    
+    var t1 = 0;
+    var t2 = performance.now()
+    var isIcosphereRotation = false;
+    var isEyeClockwise = false;
+    var angleIcosphere = 0;
+    var totalAngle = 0;
+    var startingWorldMatrix = new Float32Array(16);
+    const constantIcosphereDistance = 5;
+    var eyeClockwiseMat = glMatrix.mat3.fromValues(0, 0, -1,
+                                                   0, 1, 0,
+                                                   1, 0, 0);
+    var eyeCounterClockwiseMat = glMatrix.mat3.fromValues(0, 0, 1,
+                                                          0, 1, 0,
+                                                         -1, 0, 0);
+    
+    function renderIcosphere() {
+        gl.useProgram(icosphereProgram);
+        gl.vertexAttribPointer(
+            icospherePositionAttribLocation, //Attribute location
+            3, //Number of elements per attribute
+            gl.FLOAT, //Type of elements
+            gl.FALSE,
+            6 * Float32Array.BYTES_PER_ELEMENT, // Size of an individual vertex
+            0 // Offset from the beginning of a single vertex to this attribute
+        );
+        gl.vertexAttribPointer(
+            icosphereVertColorAttribLocation, //Attribute location
+            3, //Number of elements per attribute
+            gl.FLOAT, //Type of elements
+            gl.FALSE,
+            6 * Float32Array.BYTES_PER_ELEMENT, // Size of an individual vertex
+            3 * Float32Array.BYTES_PER_ELEMENT// Offset from the beginning of a single vertex to this attribute
+        );
+        
+        t1 = t2;
+        t2 = performance.now();
+        
+        if (isIcosphereRotation) {
+            if (isEyeClockwise) {
+                
+                angleIcosphere = (t2 - t1) / 1000 * 2 * Math.PI;
+                totalAngle += angleIcosphere;
+                
+                if (totalAngle < Math.PI) {
+                    
+                    let translationAxis = new Float32Array(3);
+                    
+                    glMatrix.mat4.getTranslation(translationAxis, icosphereWorldMatrix);
+                    
+                    let newTranslationAxis = new Float32Array(3);
+                    glMatrix.vec3.rotateY(newTranslationAxis, translationAxis, [0, 0, 0], angleIcosphere);
+                    glMatrix.vec3.normalize(newTranslationAxis, newTranslationAxis);
+                    glMatrix.vec3.scale(newTranslationAxis, newTranslationAxis, constantIcosphereDistance);
+                    glMatrix.vec3.negate(translationAxis, translationAxis);
+                    glMatrix.mat4.translate(icosphereWorldMatrix, icosphereWorldMatrix, translationAxis);
+                    glMatrix.mat4.translate(icosphereWorldMatrix, icosphereWorldMatrix, newTranslationAxis);
+                }
+                else {
+                    isIcosphereRotation = false;
+                    totalAngle = 0;
+                    
+                    glMatrix.mat4.copy(icosphereWorldMatrix, startingWorldMatrix);
+                    
+                    let translationAxis = new Float32Array(3);
+                    glMatrix.mat4.getTranslation(translationAxis, icosphereWorldMatrix);
+                    
+                    let newTranslationAxis = new Float32Array(3);
+                    glMatrix.vec3.transformMat3(newTranslationAxis, translationAxis, eyeClockwiseMat)
+                    glMatrix.vec3.negate(translationAxis, translationAxis);
+                    glMatrix.mat4.scale(icosphereWorldMatrix, icosphereWorldMatrix, [2, 2, 2]);
+                    glMatrix.mat4.translate(icosphereWorldMatrix, icosphereWorldMatrix, translationAxis);
+                    glMatrix.mat4.translate(icosphereWorldMatrix, icosphereWorldMatrix, newTranslationAxis);
+                    glMatrix.mat4.scale(icosphereWorldMatrix, icosphereWorldMatrix, [0.5, 0.5, 0.5]);
+                }
+            }
+            else {
+                angleIcosphere = (t1 - t2) / 1000 * 2 * Math.PI;
+                totalAngle += angleIcosphere;
+                
+                if (totalAngle > -Math.PI) {
+                    
+                    let translationAxis = new Float32Array(3);
+                    
+                    glMatrix.mat4.getTranslation(translationAxis, icosphereWorldMatrix);
+                    
+                    let newTranslationAxis = new Float32Array(3);
+                    glMatrix.vec3.rotateY(newTranslationAxis, translationAxis, [0, 0, 0], angleIcosphere);
+                    glMatrix.vec3.normalize(newTranslationAxis, newTranslationAxis);
+                    glMatrix.vec3.scale(newTranslationAxis, newTranslationAxis, constantIcosphereDistance);
+                    glMatrix.vec3.negate(translationAxis, translationAxis);
+                    glMatrix.mat4.translate(icosphereWorldMatrix, icosphereWorldMatrix, translationAxis);
+                    glMatrix.mat4.translate(icosphereWorldMatrix, icosphereWorldMatrix, newTranslationAxis);
+                }
+                else {
+                    isIcosphereRotation = false;
+                    totalAngle = 0;
+                    
+                    glMatrix.mat4.copy(icosphereWorldMatrix, startingWorldMatrix);
+                    
+                    let translationAxis = new Float32Array(3);
+                    glMatrix.mat4.getTranslation(translationAxis, icosphereWorldMatrix);
+                    
+                    let newTranslationAxis = new Float32Array(3);
+                    glMatrix.vec3.transformMat3(newTranslationAxis, translationAxis, eyeCounterClockwiseMat)
+                    glMatrix.vec3.negate(translationAxis, translationAxis);
+                    glMatrix.mat4.scale(icosphereWorldMatrix, icosphereWorldMatrix, [2, 2, 2]);
+                    glMatrix.mat4.translate(icosphereWorldMatrix, icosphereWorldMatrix, translationAxis);
+                    glMatrix.mat4.translate(icosphereWorldMatrix, icosphereWorldMatrix, newTranslationAxis);
+                    glMatrix.mat4.scale(icosphereWorldMatrix, icosphereWorldMatrix, [0.5, 0.5, 0.5]);
+                }
+            }
+        }
+        
+        gl.uniformMatrix4fv(icosphereMatWorldUniformLocation, gl.FALSE, icosphereWorldMatrix);
+        gl.uniformMatrix4fv(icosphereMatViewUniformLocation, gl.FALSE, viewMatrix);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(icosphereVertices), gl.STATIC_DRAW);
+        gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(icosphereIndices), gl.STATIC_DRAW);
+        gl.drawElements(gl.TRIANGLES, icosphereIndices.length, gl.UNSIGNED_SHORT, 0);
+    }
+    
+    //Main Rendering Loop
+    
+    var loop = function () {
+        
+        gl.clearColor(0.75, 0.85, 0.8, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_WIDTH_BIT);
+        renderBoxAndArrow();
+        renderIcosphere();
         
         requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
+    
+    //Eye Events
+    
+    var eyeCWButton = document.getElementById("eyeClockwise");
+    
+    eyeCWButton.addEventListener('click', function(event) {
+        if (isIcosphereRotation)
+            return;
+        isIcosphereRotation = true;
+        isEyeClockwise = true;
+        glMatrix.mat4.copy(startingWorldMatrix, icosphereWorldMatrix);
+    })
+    
+    var eyeCWButton = document.getElementById("eyeCounterClockwise");
+    
+    eyeCWButton.addEventListener('click', function(event) {
+        if (isIcosphereRotation)
+            return;
+        isIcosphereRotation = true;
+        isEyeClockwise = false;
+        glMatrix.mat4.copy(startingWorldMatrix, icosphereWorldMatrix);
+    })
+    
+    
+    //Mouse Events
     
     var drag = false;
     var dragStart;
@@ -411,25 +690,27 @@ function GLInit(canvas) {
         glMatrix.mat4.lookAt(viewMatrix, [0, 0, 9], [0, 0, 0], [0, 1, 0]);
     })
     
+    //Camera Functions
+    
     function rotateCamera(sensitivity, magnitude) {
-        var rotationAxis = new Float32Array(4);
+        let rotationAxis = new Float32Array(4);
         rotationAxis = glMatrix.vec4.fromValues(-dragY, -dragX, 0, 0);
         glMatrix.vec4.normalize(rotationAxis, rotationAxis);
-        var inverseViewMatrix = new Float32Array(16);
+        let inverseViewMatrix = new Float32Array(16);
         glMatrix.mat4.invert(inverseViewMatrix, viewMatrix);
         glMatrix.vec4.transformMat4(rotationAxis, rotationAxis, inverseViewMatrix);
-        var newRotationAxis = [rotationAxis[0], rotationAxis[1], rotationAxis[2]];
-        glMatrix.mat4.rotate(viewMatrix, viewMatrix, - sensitivity * magnitude, rotationAxis)
+        let newRotationAxis = [rotationAxis[0], rotationAxis[1], rotationAxis[2]];
+        glMatrix.mat4.rotate(viewMatrix, viewMatrix, - sensitivity * magnitude, rotationAxis);
     }
     
     function zoom(distance) {
-        var translationAxis = new Float32Array(4);
+        let translationAxis = new Float32Array(4);
         translationAxis = glMatrix.vec4.fromValues(0, 0, -distance, 0);
-        var inverseViewMatrix = new Float32Array(16);
+        let inverseViewMatrix = new Float32Array(16);
         glMatrix.mat4.invert(inverseViewMatrix, viewMatrix);
         glMatrix.vec4.transformMat4(translationAxis, translationAxis, inverseViewMatrix);
-        var newTranslationAxis = [translationAxis[0], translationAxis[1], translationAxis[2]];
-        glMatrix.mat4.translate(viewMatrix, viewMatrix, newTranslationAxis)
+        let newTranslationAxis = [translationAxis[0], translationAxis[1], translationAxis[2]];
+        glMatrix.mat4.translate(viewMatrix, viewMatrix, newTranslationAxis);
     }
 }
 
