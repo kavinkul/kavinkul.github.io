@@ -93,40 +93,88 @@
         }
     </style>
     <script>
+        // #region onload
+
         window.onload = (function(){
+
+            // Initialization
+            
             createEmptyGraph(6);
+
+            // #region Table 1 onload
 
             var firstListBox = document.getElementById("listBox1");
             var secondListBox = document.getElementById("listBox2");
             var moveUpButton = document.getElementById("moveUp");
-            moveUpButton.addEventListener("click", function() {cycleSelectedMenu(secondListBox, true)});
-
             var moveDownButton = document.getElementById("moveDown");
-            moveDownButton.addEventListener("click", function() {cycleSelectedMenu(secondListBox, false)});
-
             var transferRightButton = document.getElementById("transferRight");
-            transferRightButton.addEventListener("click", function() {transferOption(firstListBox, secondListBox, true)});
-
             var transferLeftButton = document.getElementById("transferLeft");
+            
+            moveUpButton.addEventListener("click", function() {cycleSelectedMenu(secondListBox, true)});
+            moveDownButton.addEventListener("click", function() {cycleSelectedMenu(secondListBox, false)});
+            transferRightButton.addEventListener("click", function() {transferOption(firstListBox, secondListBox, true)});
             transferLeftButton.addEventListener("click", function() {transferOption(firstListBox, secondListBox, false)});
 
-            var graphSizeMenu = document.getElementById("graphSize");
-            graphSizeMenu.addEventListener("change", function() {createNewGraph(parseInt(graphSizeMenu.options[graphSizeMenu.selectedIndex].value), firstListBox, secondListBox)});
+            // #endregion
 
-            var copyButton = document.getElementById("copy");
+            // #region Table 2 onload
+
             var thirdListBox = document.getElementById("listBox3");
             var fourthListBox = document.getElementById("listBox4");
+            var rowButton = document.getElementById("row");
+            var prevButton = document.getElementById("prev");
+            var nextButton = document.getElementById("next");
+            var saveButton = document.getElementById("save");
+            var stepCounter = document.getElementById("stepCounter");
+            var resetButton = document.getElementById("reset");
 
             thirdListBox.addEventListener("change", function() {fourthListBox.selectedIndex = -1;});
             fourthListBox.addEventListener("change", function() {thirdListBox.selectedIndex = -1});
+            rowButton.addEventListener("click", function() {
+                                                    moveAcrossRiver(thirdListBox, fourthListBox);
+                                                    updateStepCounter(stepCounter);
+                                                });
+            prevButton.addEventListener("click", function() {
+                                                     cycleState(thirdListBox, fourthListBox, false);
+                                                     updateStepCounter(stepCounter);
+                                                 });
+            nextButton.addEventListener("click", function() {
+                                                     cycleState(thirdListBox, fourthListBox, true);
+                                                     updateStepCounter(stepCounter);
+                                                 });
+            saveButton.addEventListener("click", function() {
+                                                     saveState(thirdListBox);
+                                                     updateStepCounter(stepCounter);
+                                                 });
 
-            copyButton.addEventListener("click", function() {copyToRiverTablesAndClear(secondListBox, thirdListBox, fourthListBox)});
+            resetButton.addEventListener("click", function() {
+                                                     resetStates(thirdListBox, fourthListBox);
+                                                     updateStepCounter(stepCounter);
+                                                 });
+            // #endregion
 
-            var rowButton = document.getElementById("row");
-            rowButton.addEventListener("click", function() {moveAcrossRiver(thirdListBox, fourthListBox)});
+            // #region Table 1 2 shared
 
+            var copyButton = document.getElementById("copy");
+
+            copyButton.addEventListener("click", function() {
+                                                     copyToRiverTablesAndClear(secondListBox, thirdListBox, fourthListBox);
+                                                     updateStepCounter(stepCounter);
+                                                 });
+
+            // #endregion
+
+            // #region Graph
+
+            var graphSizeMenu = document.getElementById("graphSize");
             var clearButton = document.getElementById("clear");
+
+            graphSizeMenu.addEventListener("change", function() {createNewGraph(parseInt(graphSizeMenu.options[graphSizeMenu.selectedIndex].value), firstListBox, secondListBox)});
             clearButton.addEventListener("click", function() {clearEdge()});
+
+            // #endregion
+
+            // #region Set columns
 
             if (screen.availWidth <= 650 && screen.availWidth > 345) {
                 var secondCol = document.getElementById("SecondCol");
@@ -153,28 +201,127 @@
                 fifthCol.remove();
                 sixthCol.remove();
             }}
+
+            // #endregion
         )
 
+        // #endregion
+
+        // #region Second table
+
+        var states = [];
+        var currentStep = 0;
+
+        function saveState(list){
+            let state = [];
+            let options = list.options;
+            for (let i = 0; i < options.length; i++)
+                state.push(options[i].disabled);
+            if (currentStep < states.length){
+                for (let j = states.length - 1; j > currentStep; j--)
+                    states.splice(j, 1);
+                if (currentStep !== 0 && arrayEquals(states[currentStep - 1], state)){
+                    states.splice(currentStep, 1);
+                    currentStep--;
+                }
+                else
+                    states[currentStep] = state;
+            }
+            else if (currentStep === 0 || !arrayEquals(states[currentStep - 1], state)){
+                states.push(state);
+                currentStep++;
+            }
+            if (currentStep == states.length - 1)
+                currentStep++;
+        }
+
+        function cycleState(list1, list2, forward){
+            if (states.length === 0 || (!forward && currentStep === 0) || (forward && currentStep > states.length - 1))
+                return;
+
+            currentStep += forward ? 1 : -1;
+            if (currentStep !== states.length)
+                updateState(list1, list2);
+        }
+
+        function updateState(list1, list2){
+            for (let i = 0; i < states[currentStep].length; i++)
+                if (states[currentStep][i] !== list1.options[i].disabled){
+                    if (states[currentStep][i])
+                        swapOptionForRiverTable(list1, list2, i, false);
+                    else 
+                        swapOptionForRiverTable(list2, list1, i, false);
+                }
+        }
+
         function moveAcrossRiver(list1, list2){
+            if (list1.selectedIndex === -1 && list2.selectedIndex === -1)
+                return;
+
             if (list1.selectedIndex !== -1){
                 let index = list1.selectedIndex;
-                let temp = list2.options[index];
-                list2.options[index] = new Option(list1.options[index].text, list1.options[index].value);
-                list1.options[index] = temp;
-                list2.selectedIndex = index;
-                list1.selectedIndex = -1;
+                swapOptionForRiverTable(list1, list2, index);
             }
-            else if (list2.selectedIndex !== -1){
+            else {
                 let index = list2.selectedIndex;
-                let temp = list1.options[index];
-                list1.options[index] = new Option(list2.options[index].text, list2.options[index].value);
-                list2.options[index] = temp;
-                list1.selectedIndex = index;
-                list2.selectedIndex = -1;
+                swapOptionForRiverTable(list2, list1, index);
             }
         }
 
+        function updateStepCounter(counter){
+            counter.textContent = "Step: " + currentStep;
+        }
+
+        function deleteStates(){
+            currentStep = 0;
+            states = [];
+        }
+
+        function resetStates(list1, list2){
+            deleteStates();
+            for (let i = 0; i < list1.options.length; i++)
+                if (list1.options[i].disabled)
+                    swapOptionForRiverTable(list2, list1, i, false);
+        }
+
+        // #endregion
+
+        // #region First table
+
+        function sortOptionsAfterInsertion(list){
+            if (list.length < 2)
+                return;
+
+            let currentIndex = list.length - 1;
+            while (currentIndex > 0 && (list.options[currentIndex].value < list.options[currentIndex - 1].value)){
+                swapOptions(list, currentIndex, currentIndex - 1);
+                currentIndex--;
+            }
+        }
+
+        function updateSVGText(list){
+            allTexts.forEach(textObj => textObj.textContent = "");
+
+            let min = Math.min(list.length, allTexts.length);
+
+            for (let i = 0; i < min; i++)
+                allTexts[i].textContent = list.options[i].value.substring(0, 3);
+        }
+
+        function cycleSelectedMenu(selectMenu, isUp){
+            let firstIndex = selectMenu.selectedIndex;
+            if (selectMenu.length === 0 || firstIndex === -1)
+                return;
+            if ((isUp && firstIndex === 0) || (!isUp && selectMenu.length - 1 === firstIndex))
+                return
+            let secondIndex = firstIndex + (isUp ? -1 : 1);
+            let temp = selectMenu.options[firstIndex];
+            swapOptions(selectMenu, firstIndex, secondIndex);
+            updateSVGText(selectMenu);
+        }
+
         function copyToRiverTablesAndClear(list1, list2, list3){
+            deleteStates();
             if (list1.length === 0)
                 return;
             for (let i = list2.options.length - 1; i >= 0; i--){
@@ -189,41 +336,24 @@
             }
         }
 
-        function createNewGraph(verticesCount, list1, list2){
-            svg.remove();
-            allLines = {};
-            allCircles = [];
-            allTexts = [];
-            currentIndexPressed = -1;
-            createEmptyGraph(verticesCount);
-            while (list2.length > verticesCount){
-                list2.selectedIndex = verticesCount;
-                transferOption(list1, list2, false);
-            }
-            updateSVGText(list2);
-            list1.selectedIndex = -1;
-            list2.selectedIndex = -1;
+        // #endregion
+
+        // #region Utility functions
+
+        function arrayEquals(arr1, arr2){
+            if (arr1.length !== arr2.length)
+                return false;
+
+            for (let i = 0; i < arr1.length; i++)
+                if (arr1[i] !== arr2[i])
+                    return false;
+
+            return true;
         }
 
-        function updateSVGText(list){
-            allTexts.forEach(textObj => textObj.textContent = "");
+        // #endregion
 
-            let min = Math.min(list.length, allTexts.length);
-
-            for (let i = 0; i < min; i++)
-                allTexts[i].textContent = list.options[i].value.substring(0, 3);
-        }
-
-        function sortOptionsAfterInsertion(list){
-            if (list.length < 2)
-                return;
-
-            let currentIndex = list.length - 1;
-            while (currentIndex > 0 && (list.options[currentIndex].value < list.options[currentIndex - 1].value)){
-                swapOptions(list, currentIndex, currentIndex - 1);
-                currentIndex--;
-            }
-        }
+        // #region Swap functions
 
         function swapOptions(list, index1, index2){
             if (list.length === 0 || index1 === index2 || index1 < 0 || index2 < 0 || index1 >= list.length || index2 >= list.length)
@@ -234,6 +364,17 @@
             list.options[index2] = temp;
         }
 
+        function swapOptionForRiverTable(list1, list2, index, swapSelectedIndex = true){
+            let temp = list2.options[index];
+            list2.options[index] = new Option(list1.options[index].text, list1.options[index].value);
+            list1.options[index] = temp;
+            if (swapSelectedIndex)
+                list2.selectedIndex = index;
+            else
+                list2.selectedIndex = -1;
+            list1.selectedIndex = -1;
+        }
+        
         function transferOption(list1, list2, forward){
             if ((forward && list2.length === allCircles.length) || (!forward && list2.length === 0))
                 return;
@@ -256,18 +397,10 @@
             }
             updateSVGText(list2);
         }
-        
-        function cycleSelectedMenu(selectMenu, isUp){
-            let firstIndex = selectMenu.selectedIndex;
-            if (selectMenu.length === 0 || firstIndex === -1)
-                return;
-            if ((isUp && firstIndex === 0) || (!isUp && selectMenu.length - 1 === firstIndex))
-                return
-            let secondIndex = firstIndex + (isUp ? -1 : 1);
-            let temp = selectMenu.options[firstIndex];
-            swapOptions(selectMenu, firstIndex, secondIndex);
-            updateSVGText(selectMenu);
-        }
+
+        // #endregion
+
+        // #region SVG functions
 
         var allLines = {};
         var allCircles = [];
@@ -308,6 +441,22 @@
             div.appendChild(svg);
         }
 
+        function createNewGraph(verticesCount, list1, list2){
+            svg.remove();
+            allLines = {};
+            allCircles = [];
+            allTexts = [];
+            currentIndexPressed = -1;
+            createEmptyGraph(verticesCount);
+            while (list2.length > verticesCount){
+                list2.selectedIndex = verticesCount;
+                transferOption(list1, list2, false);
+            }
+            updateSVGText(list2);
+            list1.selectedIndex = -1;
+            list2.selectedIndex = -1;
+        }
+
         function clearEdge(){
             Object.values(allLines).forEach(edge => edge.classList.add("notVisible"));
         }
@@ -343,6 +492,7 @@
                 currentIndexPressed = -1;
             }
         }
+        // #endregion
     </script>
 </head>
 <body>
@@ -709,7 +859,7 @@
                 <table class="animalListUI">
                     <tr>
                         <td style="color: white;">Start</td>
-                        <td></td>
+                        <td id="stepCounter" style="color: white;">Step: 0</td>
                         <td style="color: white;">Finish</td>
                     </tr>
                     <tr>
@@ -724,6 +874,25 @@
                             <select id="listBox4" class="selectMenu noScroll" size="9">
                             </select>
                         </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td style="text-align: center;">
+                            <button id="reset">Reset</button>
+                        </td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <button id="prev" style="float: left;">Prev state</button>
+                        </td>
+                        <td>
+                            <button id="save" style="clear: both;">Save state</button>
+                        </td>
+                        <td>
+                            <button id="next" style="float: right;">Next state</button>
+                        </td>
+                        <div style="clear: both;"></div>
                     </tr>
                 </table>
             </div>
