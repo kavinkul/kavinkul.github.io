@@ -136,6 +136,9 @@
             padding: 0; /* Remove padding */
             margin: 0; /* Remove margins */
         }
+        button {
+            width: auto;
+        }
     </style>
     <script>
         // #region onload
@@ -143,6 +146,9 @@
         window.onload = (function(){
 
             // Initialization
+            
+            createEmptyGraph(6);
+            
             var menu1 = document.getElementById("menu1");
             var menu2 = document.getElementById("menu2");
             var testButton = document.getElementById("testButton");
