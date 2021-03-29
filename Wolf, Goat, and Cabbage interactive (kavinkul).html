@@ -8,8 +8,6 @@
     <link rel="stylesheet" type="text/css" href="css/normalize.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
     <script src="js/ktane-utils.js"></script>
-    <script src="js/jquery.3.1.1.min.js"></script>
-    <script src="js/jquery-ui.1.12.1.min.js"></script>
     <style>
         .row {
             font-size: 11pt;
@@ -99,7 +97,7 @@
             display: flex;
             justify-content: center;
             width: 90%;
-            margin: 0.25em auto; 
+            margin: 0.25em auto;
         }
         .generalUI {
             flex: 1;
@@ -126,20 +124,17 @@
         .rightCol {
             grid-column: 3;
         }
-        #menu {
+        .listBox {
             width: 25%;
             border: 5px solid black;
             padding: 0.5em; /* Remove padding */
-            height: 100px;
+            height: 190px;
             overflow-y: auto;
         }
-        #menu li {
+        .listBox li {
             list-style-type: none; /* Remove bullets */
             padding: 0; /* Remove padding */
             margin: 0; /* Remove margins */
-        }
-        .ui-selected {
-            background-color: blue;
         }
     </style>
     <script>
@@ -148,9 +143,19 @@
         window.onload = (function(){
 
             // Initialization
-            $("#menu").children().each(function() {
-                $( this ).selectable();
-            });
+            var menu1 = document.getElementById("menu1");
+            var menu2 = document.getElementById("menu2");
+            var testButton = document.getElementById("testButton");
+            var testButton2 = document.getElementById("testButton2");
+
+            var customSelectMenu1 = new CustomSelectMenu(menu1);
+            var customSelectMenu2 = new CustomSelectMenu(menu2);
+            testButton.addEventListener("click", function() {
+                                                     CustomSelectMenu.transferTo(customSelectMenu1, customSelectMenu2);
+                                                 });
+            testButton2.addEventListener("click", function(){
+                                                      CustomSelectMenu.transferTo(customSelectMenu2, customSelectMenu1, true);
+                                                  });
 
             // #region Help Messages onload
 
@@ -283,6 +288,85 @@
 
         // #endregion
 
+        // #region Custom Select Menu
+
+        class CustomSelectMenu {
+            constructor(ul){
+                let thisMenu = this;
+                this.ul = ul;
+                this.selectedIndex = -1;
+                this.allChild = this.ul.children;
+
+                this.handleClickListeners = [];
+                for (let i = 0; i < this.allChild.length; i++) {
+                    this.handleClickListeners.push(this.handleClick.bind(this, i));
+                    this.allChild[i].addEventListener("click", this.handleClickListeners[i]);
+                }
+            }
+
+            handleClick(index){
+                if (this.selectedIndex !== -1){
+                    this.allChild[this.selectedIndex].style.backgroundColor = "white";
+                    this.allChild[this.selectedIndex].style.color = "black";
+                }
+                this.selectedIndex = index;
+                this.allChild[this.selectedIndex].style.backgroundColor = "RGB(30, 144, 255)";
+                this.allChild[this.selectedIndex].style.color = "white";
+                console.log(index);
+            }
+
+            addItem(itemName){
+                let li = document.createElement("li");
+                li.textContent = itemName;
+                this.ul.appendChild(li);
+                let childLength = this.allChild.length - 1;
+                this.handleClickListeners.push(this.handleClick.bind(this, childLength));
+                li.addEventListener("click",  this.handleClickListeners[childLength]);
+            }
+
+            removeItem(index){
+                this.allChild[index].remove();
+                this.selectedIndex = -1;
+                for (let i = index; i < this.allChild.length; i++){
+                    this.allChild[i].removeEventListener("click",  this.handleClickListeners[i + 1]);
+                    this.handleClickListeners[i] = this.handleClick.bind(this, i);
+                    this.allChild[i].addEventListener("click",  this.handleClickListeners[i]);
+                }
+                this.handleClickListeners = this.handleClickListeners.slice(0, this.handleClickListeners.length - 1);
+            }
+
+            insertOneAndSort(itemName){
+                let i = 0;
+                while (itemName > this.allChild[i].textContent)
+                    i++;
+
+                let itemsAfter = [];
+
+                for (let j = i; j < this.allChild.length; j++)
+                    itemsAfter.push(this.allChild[j].textContent);
+
+                for (let j = this.allChild.length - 1; j >= i; j--)
+                    this.removeItem(j);
+
+                this.addItem(itemName);
+                itemsAfter.forEach(item => this.addItem(item));
+            }
+
+            static transferTo(csm1, csm2, isSort = false){
+                let index = csm1.selectedIndex;
+                if (index === -1)
+                    return;
+                let itemName = csm1.allChild[index].textContent;
+                csm1.removeItem(index);
+                if (!isSort)
+                    csm2.addItem(itemName);
+                else
+                    csm2.insertOneAndSort(itemName);
+            }
+        }
+
+        // #endregion
+
         // #region Help Messages
 
         function hideHelpMessage(messageDiv){
@@ -361,7 +445,7 @@
                 if (states[currentStep][i] !== list1.options[i].disabled){
                     if (states[currentStep][i])
                         swapOptionForRiverTable(list1, list2, i, false);
-                    else 
+                    else
                         swapOptionForRiverTable(list2, list1, i, false);
                 }
         }
@@ -696,17 +780,36 @@
                 <h2>On the Subject of Wolf, Goat, and Cabbage.</h2>
                 <p class="flavour-text">Do you remember the old riddle Wolf, Goat, and Cabbage from Alcuin of York? If not, you now have a chance to solve it! Well, if only this is not attached to the explosive device.</p>
                 <p class="appendix-reference" id="appendix-reference">See Appendix W for creatures identification.</p>
-                <ul id="menu">
-                    <li><div>Books</div></li>
-                    <li><div>Clothing</div></li>
-                    <li><div>Electronics</div></li>
-                    <li><div>Books</div></li>
-                    <li><div>Clothing</div></li>
-                    <li><div>Electronics</div></li>
-                    <li><div>Books</div></li>
-                    <li><div>Clothing</div></li>
-                    <li><div>Electronics</div></li>
+                <ul id="menu1" class="listBox">
+                    <li>Bear</li>
+                    <li>Berry</li>
+                    <li>Cabbage</li>
+                    <li>Carrot</li>
+                    <li>Cat</li>
+                    <li>Chicken</li>
+                    <li>Corn</li>
+                    <li>Dog</li>
+                    <li>Duck</li>
+                    <li>Earthworm</li>
+                    <li>Fish</li>
+                    <li>Fox</li>
+                    <li>Goat</li>
+                    <li>Goose</li>
+                    <li>Grass</li>
+                    <li>Horse</li>
+                    <li>Kiwi</li>
+                    <li>Mouse</li>
+                    <li>Rabbit</li>
+                    <li>Rice</li>
+                    <li>Seeds</li>
+                    <li>Wolf</li>
                 </ul>
+                <ul id="menu2" class="listBox">
+                </ul>
+                <button id="testButton">dfget
+                </button>
+                <button id="testButton2">dfgetarserrdrt
+                </button>
                 <ul>
                     <li>Pictures of 6 to 9 creatures will be shown on the screen one at a time.</li>
                     <li>Buttons to the left and right of this screen can be used to cycle for each creature.</li>
