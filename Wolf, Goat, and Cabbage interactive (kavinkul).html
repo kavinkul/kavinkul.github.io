@@ -152,21 +152,30 @@
         window.onload = (function(){
 
             // Initialization
-            
+
             createEmptyGraph(6);
-            
+
             var menu1 = document.getElementById("menu1");
             var menu2 = document.getElementById("menu2");
             var testButton = document.getElementById("testButton");
             var testButton2 = document.getElementById("testButton2");
+            var testButton3 = document.getElementById("testButton3");
+            var testButton4 = document.getElementById("testButton4");
 
             var customSelectMenu1 = new CustomSelectMenu(menu1);
             var customSelectMenu2 = new CustomSelectMenu(menu2);
+
             testButton.addEventListener("click", function() {
                                                      CustomSelectMenu.transferTo(customSelectMenu1, customSelectMenu2);
                                                  });
             testButton2.addEventListener("click", function(){
                                                       CustomSelectMenu.transferTo(customSelectMenu2, customSelectMenu1, true);
+                                                  });
+            testButton3.addEventListener("click", function(){
+                                                      customSelectMenu2.moveOptions(true);
+                                                  });
+            testButton4.addEventListener("click", function(){
+                                                      customSelectMenu2.moveOptions(false);
                                                   });
 
             // #region Help Messages onload
@@ -304,12 +313,11 @@
 
         class CustomSelectMenu {
             constructor(ul){
-                let thisMenu = this;
                 this.ul = ul;
                 this.selectedIndex = -1;
                 this.allChild = this.ul.children;
-
                 this.handleClickListeners = [];
+
                 for (let i = 0; i < this.allChild.length; i++) {
                     this.handleClickListeners.push(this.handleClick.bind(this, i));
                     this.allChild[i].addEventListener("click", this.handleClickListeners[i]);
@@ -362,6 +370,27 @@
 
                 this.addItem(itemName);
                 itemsAfter.forEach(item => this.addItem(item));
+            }
+
+            moveOptions(isUp){
+                if (this.selectedIndex === -1 || (isUp && this.selectedIndex === 0) || (!isUp && this.selectedIndex === this.allChild.length - 1))
+                    return;
+
+                let nextIndex = isUp ? this.selectedIndex - 1: this.selectedIndex + 1;
+
+                this.allChild[nextIndex].removeEventListener("click", this.handleClickListeners[nextIndex]);
+                this.allChild[nextIndex].addEventListener("click", this.handleClickListeners[this.selectedIndex]);
+
+                let li = document.createElement("li");
+                li.textContent = this.allChild[this.selectedIndex].textContent;
+                this.allChild[this.selectedIndex].remove();
+                if (nextIndex >= this.allChild.length)
+                    this.ul.appendChild(li);
+                else
+                    this.ul.insertBefore(li, this.allChild[nextIndex]);
+
+                this.allChild[nextIndex].addEventListener("click", this.handleClickListeners[nextIndex]);
+                this.handleClick(nextIndex);
             }
 
             static transferTo(csm1, csm2, isSort = false){
@@ -821,6 +850,10 @@
                 <button id="testButton">dfget
                 </button>
                 <button id="testButton2">dfgetarserrdrt
+                </button>
+                <button id="testButton3">dfgetarserraesrfadrt
+                </button>
+                <button id="testButton4">weraf
                 </button>
                 <ul>
                     <li>Pictures of 6 to 9 creatures will be shown on the screen one at a time.</li>
