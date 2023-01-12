@@ -1,0 +1,737 @@
+<!DOCTYPE html><html><head>
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <meta content="IE=edge" http-equiv="X-UA-Compatible">
+    <title>Orientation Cube — Keep Talking and Nobody Explodes Module</title>
+    <meta content="initial-scale=1" name="viewport">
+    <link rel="stylesheet" type="text/css" href="css/font.css">
+    <link href="css/normalize.css" rel="stylesheet" type="text/css">
+    <link href="css/main.css" rel="stylesheet" type="text/css">
+    <script src="js/ktane-utils.js"></script>
+    <style>
+        .diagram-right {
+            float: right;
+            width: 70mm;
+            display: block;
+            margin-top: 2.5em;
+        }
+        .diagram-left {
+            float: left;
+            width: 70mm;
+            display: block;
+            margin-top: 2.5em;
+        }
+    </style>
+    <script src="js/jquery.3.1.1.min.js"></script>
+    <script>
+        $(function(){
+            var canvas = document.getElementById("cubeCanvas");
+            var width = canvas.offsetWidth;
+            var height = canvas.offsetHeight;
+            var ctx = canvas.getContext('2d');
+            class Matrix4 {
+                constructor(a11, a21, a31, a41, a12, a22, a32, a42, a13, a23, a33, a43, a14, a24, a34, a44){
+                    this.a11 = a11;
+                    this.a21 = a21;
+                    this.a31 = a31;
+                    this.a41 = a41;
+                    this.a12 = a12;
+                    this.a22 = a22;
+                    this.a32 = a32;
+                    this.a42 = a42;
+                    this.a13 = a13;
+                    this.a23 = a23;
+                    this.a33 = a33;
+                    this.a43 = a43;
+                    this.a14 = a14;
+                    this.a24 = a24;
+                    this.a34 = a34;
+                    this.a44 = a44;
+                }
+                add(m1, m2){
+                    let m3 = new Matrix4();
+                    m3.a11 = m1.a11 + m2.a11;
+                    m3.a21 = m1.a21 + m2.a21;
+                    m3.a31 = m1.a31 + m2.a31;
+                    m3.a41 = m1.a41 + m2.a41;
+                    m3.a12 = m1.a12 + m2.a12;
+                    m3.a22 = m1.a22 + m2.a22;
+                    m3.a32 = m1.a32 + m2.a32;
+                    m3.a42 = m1.a42 + m2.a42;
+                    m3.a13 = m1.a13 + m2.a13;
+                    m3.a23 = m1.a23 + m2.a23;
+                    m3.a33 = m1.a33 + m2.a33;
+                    m3.a43 = m1.a43 + m2.a43;
+                    m3.a14 = m1.a14 + m2.a14;
+                    m3.a24 = m1.a24 + m2.a24;
+                    m3.a34 = m1.a34 + m2.a34;
+                    m3.a44 = m1.a44 + m2.a44;
+                    return m3;
+                }
+                static subtract(m1, m2){
+                    let m3 = new Matrix4();
+                    m3.a11 = m1.a11 - m2.a11;
+                    m3.a21 = m1.a21 - m2.a21;
+                    m3.a31 = m1.a31 - m2.a31;
+                    m3.a41 = m1.a41 - m2.a41;
+                    m3.a12 = m1.a12 - m2.a12;
+                    m3.a22 = m1.a22 - m2.a22;
+                    m3.a32 = m1.a32 - m2.a32;
+                    m3.a42 = m1.a42 - m2.a42;
+                    m3.a13 = m1.a13 - m2.a13;
+                    m3.a23 = m1.a23 - m2.a23;
+                    m3.a33 = m1.a33 - m2.a33;
+                    m3.a43 = m1.a43 - m2.a43;
+                    m3.a14 = m1.a14 - m2.a14;
+                    m3.a24 = m1.a24 - m2.a24;
+                    m3.a34 = m1.a34 - m2.a34;
+                    m3.a44 = m1.a44 - m2.a44;
+                    return m3;
+                }
+                static multiply(m1, m2){
+                    let m3 = new Matrix4();
+                    m3.a11 = m1.a11 * m2.a11 + m1.a12 * m2.a21 + m1.a13 * m2.a31 + m1.a14 * m2.a41;
+                    m3.a21 = m1.a21 * m2.a11 + m1.a22 * m2.a21 + m1.a23 * m2.a31 + m1.a24 * m2.a41;
+                    m3.a31 = m1.a31 * m2.a11 + m1.a32 * m2.a21 + m1.a33 * m2.a31 + m1.a34 * m2.a41;
+                    m3.a41 = m1.a41 * m2.a11 + m1.a42 * m2.a21 + m1.a43 * m2.a31 + m1.a44 * m2.a41;
+                    m3.a12 = m1.a11 * m2.a12 + m1.a12 * m2.a22 + m1.a13 * m2.a32 + m1.a14 * m2.a42;
+                    m3.a22 = m1.a21 * m2.a12 + m1.a22 * m2.a22 + m1.a23 * m2.a32 + m1.a24 * m2.a42;
+                    m3.a32 = m1.a31 * m2.a12 + m1.a32 * m2.a22 + m1.a33 * m2.a32 + m1.a34 * m2.a42;
+                    m3.a42 = m1.a41 * m2.a12 + m1.a42 * m2.a22 + m1.a43 * m2.a32 + m1.a44 * m2.a42;
+                    m3.a13 = m1.a11 * m2.a13 + m1.a12 * m2.a23 + m1.a13 * m2.a33 + m1.a14 * m2.a43;
+                    m3.a23 = m1.a21 * m2.a13 + m1.a22 * m2.a23 + m1.a23 * m2.a33 + m1.a24 * m2.a43;
+                    m3.a33 = m1.a31 * m2.a13 + m1.a32 * m2.a23 + m1.a33 * m2.a33 + m1.a34 * m2.a43;
+                    m3.a43 = m1.a41 * m2.a13 + m1.a42 * m2.a23 + m1.a43 * m2.a33 + m1.a44 * m2.a43;
+                    m3.a14 = m1.a11 * m2.a14 + m1.a12 * m2.a24 + m1.a13 * m2.a34 + m1.a14 * m2.a44;
+                    m3.a24 = m1.a21 * m2.a14 + m1.a22 * m2.a24 + m1.a23 * m2.a34 + m1.a24 * m2.a44;
+                    m3.a34 = m1.a31 * m2.a14 + m1.a32 * m2.a24 + m1.a33 * m2.a34 + m1.a34 * m2.a44;
+                    m3.a44 = m1.a41 * m2.a14 + m1.a42 * m2.a24 + m1.a43 * m2.a34 + m1.a44 * m2.a44;
+                    return m3;
+                }
+            }
+            class Vector4 {
+                constructor(a11, a21, a31, a41){
+                    this.a11 = a11;
+                    this.a21 = a21;
+                    this.a31 = a31;
+                    this.a41 = a41;
+                }
+                static add(v1, v2){
+                    let v3 = new Vector4();
+                    v3.a11 = v1.a11 + v2.a11;
+                    v3.a21 = v1.a21 + v2.a21;
+                    v3.a31 = v1.a31 + v2.a31;
+                    v3.a41 = v1.a41 + v2.a41;
+                    return v3;
+                }
+                static subtract(v1, v2){
+                    let v3 = new Vector4();
+                    v3.a11 = v1.a11 - v2.a11;
+                    v3.a21 = v1.a21 - v2.a21;
+                    v3.a31 = v1.a31 - v2.a31;
+                    v3.a41 = v1.a41 - v2.a41;
+                    return v3;
+                }
+                static multiply(m, v){
+                    let v2 = new Vector4();
+                    v2.a11 = m.a11 * v.a11 + m.a12 * v.a21 + m.a13 * v.a31 + m.a14 * v.a41;
+                    v2.a21 = m.a21 * v.a11 + m.a22 * v.a21 + m.a23 * v.a31 + m.a24 * v.a41;
+                    v2.a31 = m.a31 * v.a11 + m.a32 * v.a21 + m.a33 * v.a31 + m.a34 * v.a41;
+                    v2.a41 = m.a41 * v.a11 + m.a42 * v.a21 + m.a43 * v.a31 + m.a44 * v.a41;
+                    return v2;
+                }
+                convertToVector3(){
+                    let v2 = new Vector3();
+                    v2.a11 = this.a11;
+                    v2.a21 = this.a21;
+                    v2.a31 = this.a31;
+                    return v2;
+                }
+                normalizeW(){
+                    this.a11 /= this.a41;
+                    this.a21 /= this.a41;
+                    this.a31 /= this.a41;
+                    this.a41 = 1;
+                }
+            }
+            class Vector3 {
+                constructor(a11, a21, a31){
+                    this.a11 = a11;
+                    this.a21 = a21;
+                    this.a31 = a31;
+                }
+                static add(v1, v2){
+                    let v3 = new Vector3();
+                    v3.a11 = v1.a11 + v2.a11;
+                    v3.a21 = v1.a21 + v2.a21;
+                    v3.a31 = v1.a31 + v2.a31;
+                    return v3;
+                }
+                static subtract(v1, v2){
+                    let v3 = new Vector3();
+                    v3.a11 = v1.a11 - v2.a11;
+                    v3.a21 = v1.a21 - v2.a21;
+                    v3.a31 = v1.a31 - v2.a31;
+                    return v3;
+                }
+                static multiply(m, v){
+                    let v3 = new Vector3();
+                    v3.a11 = m.a11 * v.a11 + m.a12 * v.a21 + m.a13 * v.a31;
+                    v3.a21 = m.a21 * v.a11 + m.a22 * v.a21 + m.a23 * v.a31;
+                    v3.a31 = m.a31 * v.a11 + m.a32 * v.a21 + m.a33 * v.a31;
+                    return v3;
+                }
+                static cross(v1, v2){
+                    let v3 = new Vector3();
+                    v3.a11 = v1.a21 * v2.a31 - v2.a21 * v1.a31;
+                    v3.a21 = - (v1.a11 * v2.a31 - v2.a11 * v1.a31);
+                    v3.a31 = v1.a11 * v2.a21 - v2.a11 * v1.a21;
+                    return v3;
+                }
+                static dot(v1, v2){
+                    return v1.a11 * v2.a11 + v1.a21 * v2.a21 + v1.a31 * v2.a31;
+                }
+                convertToVector4(k){
+                    let v = new Vector4();
+                    v.a11 = this.a11;
+                    v.a21 = this.a21;
+                    v.a31 = this.a31;
+                    v.a41 = k;
+                    return v;
+                }
+                normalize(){
+                    let magnitude = Math.sqrt(Math.pow(this.a11, 2) + Math.pow(this.a21, 2) + Math.pow(this.a31, 2));
+                    if (magnitude === 0) return;
+                    this.a11 /= magnitude;
+                    this.a21 /= magnitude;
+                    this.a31 /= magnitude;
+                }
+            }
+            function createViewMatrix(eye, at, up){
+                let translationMatrix = new Matrix4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, -eye.a11, -eye.a21, -eye.a31, 1);
+                let n = Vector3.subtract(at, eye);
+                n.normalize();
+                let u = Vector3.cross(up, n);
+                u.normalize();
+                let v = Vector3.cross(n, u);
+                let rotationMatrix = new Matrix4(u.a11, -v.a11, n.a11, 0, u.a21, -v.a21, n.a21, 0, u.a31, -v.a31, n.a31, 0, 0, 0, 0, 1);
+                return Matrix4.multiply(rotationMatrix, translationMatrix);
+            }
+            var cameraPosition = new Vector3(5, 5, 5);
+            var cameraTarget = new Vector3(0, 0, 0);
+            var cameraUp = new Vector3(0, 1, 0);
+            var modelMatrix = new Matrix4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+            var viewMatrix = createViewMatrix(cameraPosition, cameraTarget, cameraUp);
+            var modelViewMatrix = Matrix4.multiply(viewMatrix, modelMatrix);
+            var projectionParameters = {left: -0.5, right: 0.5, top: 0.5, bottom: -0.5, near: 10, far: 20};
+            var projectionType = {
+                Orthogonal: 1,
+                Perspective: 2
+            };
+            var currentProjectionMode = projectionType.Perspective;
+            function createProjectionMatrix(Type, Parameters){
+                let projectionMat;
+                switch (Type){
+                    case projectionType.Perspective:
+                        projectionMat = new Matrix4(Parameters.near / Parameters.right, 0, 0, 0, 0, Parameters.near / Parameters. top, 0, 0, 0, 0, -(Parameters.far + Parameters.near) / (Parameters.far - Parameters.near), -1, 0, 0, -2 * Parameters.far * Parameters.near / (Parameters.far - Parameters.near), 0);
+                        break;
+                    default: //Setting orthogonal projection as a default case
+                        projectionMat = new Matrix4(-1 / Parameters.right, 0, 0, 0, 0, -1 / Parameters.top, 0, 0, 0, 0, 2 / (Parameters.near - Parameters.far), 0, 0, 0, -(Parameters.far + Parameters.near) / (Parameters.far - Parameters.near), 1);
+                }
+                return projectionMat;
+            }
+            var projectionMatrix = createProjectionMatrix(currentProjectionMode, projectionParameters);
+            var modelViewProjectionMatrix  = Matrix4.multiply(projectionMatrix, modelViewMatrix);
+            class Dot {
+                constructor(x, y, z){
+                    this.Vector = new Vector4(x, y, z, 1);
+                    this.xScreen = x;
+                    this.yScreen = y;
+                }
+                project(){
+                    this.VectorScreen = Vector4.multiply(modelViewProjectionMatrix, this.Vector);
+                    this.VectorScreen.normalizeW();
+                    this.xScreen = this.VectorScreen.a11;
+                    this.yScreen = this.VectorScreen.a21;
+                }
+            }
+            var dotCollections = [
+                new Dot (-1, -1, -1),
+                new Dot (-1, -1, 1),
+                new Dot (-1, 1, -1),
+                new Dot (1, -1, -1),
+                new Dot (-1, 1, 1),
+                new Dot (1, -1, 1),
+                new Dot (1, 1, -1),
+                new Dot (1, 1, 1)
+            ];
+            var faces = [
+                [3, 5, 7, 6],
+                [0, 2, 4, 1],
+                [2, 6, 7, 4],
+                [0, 1, 5, 3],
+                [1, 4, 7, 5],
+                [0, 3, 6, 2]
+            ];
+            function cubeMapping(index, u, v){
+                let uc = 2 * u - 1;
+                let vc = 1 - 2 * v;
+                let vector;
+                switch (index){
+                    case 0:
+                    vector = new Dot (1, vc, -uc);
+                    break;
+                    case 1:
+                    vector = new Dot (-1, vc, uc);
+                    break;
+                    case 2:
+                    vector = new Dot (uc, 1, -vc);
+                    break;
+                    case 3:
+                    vector = new Dot (uc, -1, vc);
+                    break;
+                    case 4:
+                    vector = new Dot (uc, vc, 1);
+                    break;
+                    case 5:
+                    vector = new Dot (-uc, vc, -1);
+                    break;
+                }
+                vector.project();
+                return vector;
+            }
+            var textPixelData = [
+                [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0],
+                    [0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+                    [0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0],
+                    [0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0],
+                    [0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0, 1, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                ],
+                [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 1, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                ],
+                [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0],
+                    [0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0],
+                    [0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0],
+                    [0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                ],
+                [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0],
+                    [0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 1, 1, 0, 0],
+                    [0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+                    [0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0],
+                    [0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0],
+                    [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+                    [0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0],
+                    [0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                ],
+                [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0],
+                    [0, 0, 1, 1, 1, 0, 1, 0, 1, 0, 1, 0, 0, 1, 0, 0],
+                    [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0],
+                    [0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 1, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                ],
+                [
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 1, 1, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 1, 0, 1, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+                ]
+            ];
+            function textureMapping(face){
+                var subSquaresCount = 16;
+                let subSection = 0.5 / subSquaresCount;
+                for (let i = 0; i < subSquaresCount; i++){
+                    let t = 1.0 / (2 * subSquaresCount) + i / subSquaresCount;
+                    for (let j = 0; j < subSquaresCount; j++){
+                        if (textPixelData[face][i][j] === 0) continue;
+                        let s = 1.0 / (2 * subSquaresCount) + j / subSquaresCount;
+                        let vector1 = cubeMapping(face, s - subSection, t - subSection);
+                        let vector2 = cubeMapping(face, s - subSection, t + subSection);
+                        let vector3 = cubeMapping(face, s + subSection, t + subSection);
+                        let vector4 = cubeMapping(face, s + subSection, t - subSection);
+                        ctx.beginPath();
+                        ctx.moveTo(vector1.xScreen * 25 + width / 2, height / 2 - vector1.yScreen * 25);
+                        ctx.lineTo(vector2.xScreen * 25 + width / 2, height / 2 - vector2.yScreen * 25);
+                        ctx.lineTo(vector3.xScreen * 25 + width / 2, height / 2 - vector3.yScreen * 25);
+                        ctx.lineTo(vector4.xScreen * 25 + width / 2, height / 2 - vector4.yScreen * 25);
+                        ctx.closePath();
+                        ctx.lineWidth = "2";
+                        ctx.stroke();
+                        ctx.fillStyle = "black";
+                        ctx.fill();
+                    }
+                }
+            }
+            function render(){
+                ctx.clearRect(0, 0, width, height);
+                for (let i = 0; i < dotCollections.length; i++)
+                    dotCollections[i].project();
+                let facesToFill = [];
+                faces.forEach((item, index) => {
+                    let vector1 = Vector3.subtract(dotCollections[item[1]].Vector.convertToVector3(), dotCollections[item[0]].Vector.convertToVector3());
+                    let vector2 = Vector3.subtract(dotCollections[item[3]].Vector.convertToVector3(), dotCollections[item[0]].Vector.convertToVector3());
+                    let normal = Vector3.cross(vector1, vector2);
+                    let newNormal = Vector4.multiply(viewMatrix, Vector4.multiply(modelMatrix, normal.convertToVector4(0)));
+                    let dotNormal = Vector3.dot(newNormal.convertToVector3(), new Vector3 (0, 0, 1));
+                    //Back face culling
+                    if (dotNormal > 0)
+                        facesToFill.push({"index": index, "zIndex": newNormal.a31});
+                });
+                facesToFill.sort(function(a, b){
+                    if (a.zIndex < b.zIndex)
+                        return -1;
+                    else if (a.zIndex > b.zIndex)
+                        return 1;
+                    return 0;
+                });
+                facesToFill.forEach((item) => {
+                    ctx.beginPath();
+                    ctx.moveTo(dotCollections[faces[item.index][0]].xScreen * 25 + width / 2, height / 2 - dotCollections[faces[item.index][0]].yScreen * 25);
+                    ctx.lineTo(dotCollections[faces[item.index][1]].xScreen * 25 + width / 2, height / 2 - dotCollections[faces[item.index][1]].yScreen * 25);
+                    ctx.lineTo(dotCollections[faces[item.index][2]].xScreen * 25 + width / 2, height / 2 - dotCollections[faces[item.index][2]].yScreen * 25);
+                    ctx.lineTo(dotCollections[faces[item.index][3]].xScreen * 25 + width / 2, height / 2 - dotCollections[faces[item.index][3]].yScreen * 25);
+                    ctx.closePath();
+                    ctx.lineWidth = "2";
+                    ctx.fillStyle = "white";
+                    ctx.fill();
+                    ctx.stroke();
+                    textureMapping(item.index);
+                });
+            }
+            render();
+            function updateModelMatrix(rotationMat, oldModelMatrix){
+                modelMatrix = Matrix4.multiply(rotationMat, oldModelMatrix);
+                updateModelViewMatrix(viewMatrix, modelMatrix);
+            }
+            function updateModelViewMatrix(newViewMatrix, newModelMatrix){
+                modelViewMatrix = Matrix4.multiply(newViewMatrix, newModelMatrix);
+                updateModelViewProjectionMatrix(projectionMatrix, modelViewMatrix);
+            }
+            function updateModelViewProjectionMatrix(newProjectionMatrix, newModelViewMatrix){
+                modelViewProjectionMatrix = Matrix4.multiply(newProjectionMatrix, newModelViewMatrix);
+            }
+            var rotationType = {
+                CW_X: 1,
+                CCW_X: 2,
+                CW_Y: 3,
+                CCW_Y: 4,
+                CW_Z: 5,
+                CCW_Z: 6
+            };
+            var rotating = false;
+            function setupRotation(newAbsoluteTheta, rotationMode){
+                if (rotating) return;
+                rotating = true;
+                let theta = newAbsoluteTheta;
+                let radian = Math.PI * theta / 180;
+                let previousModelMatrix = modelMatrix;
+                let incrementalRotationMatrix;
+                let finalRotationMatrix;
+                switch (rotationMode){
+                    case rotationType.CW_X:
+                        radian = - radian;
+                        incrementalRotationMatrix = new Matrix4(1, 0, 0, 0, 0, Math.cos(radian), Math.sin(radian), 0, 0, - Math.sin(radian), Math.cos(radian), 0, 0, 0, 0, 1);
+                        finalRotationMatrix = new Matrix4(1, 0, 0, 0, 0, 0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1);
+                        break;
+                    case rotationType.CCW_X:
+                        incrementalRotationMatrix = new Matrix4(1, 0, 0, 0, 0, Math.cos(radian), Math.sin(radian), 0, 0, - Math.sin(radian), Math.cos(radian), 0, 0, 0, 0, 1);
+                        finalRotationMatrix = new Matrix4(1, 0, 0, 0, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1);
+                        break;
+                    case rotationType.CW_Y:
+                        radian = - radian;
+                        incrementalRotationMatrix = new Matrix4(Math.cos(radian), 0, - Math.sin(radian), 0, 0, 1, 0, 0, Math.sin(radian), 0, Math.cos(radian), 0, 0, 0, 0, 1);
+                        finalRotationMatrix = new Matrix4(0, 0, 1, 0, 0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 0, 1);
+                        break;
+                    case rotationType.CCW_Y:
+                        incrementalRotationMatrix = new Matrix4(Math.cos(radian), 0, - Math.sin(radian), 0, 0, 1, 0, 0, Math.sin(radian), 0, Math.cos(radian), 0, 0, 0, 0, 1);
+                        finalRotationMatrix = new Matrix4(0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1);
+                        break;
+                    case rotationType.CW_Z:
+                        radian = - radian;
+                        incrementalRotationMatrix = new Matrix4(Math.cos(radian), Math.sin(radian), 0, 0, - Math.sin(radian), Math.cos(radian), 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+                        finalRotationMatrix = new Matrix4(0, -1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+                        break;
+                    case rotationType.CCW_Z:
+                        incrementalRotationMatrix = new Matrix4(Math.cos(radian), Math.sin(radian), 0, 0, - Math.sin(radian), Math.cos(radian), 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+                        finalRotationMatrix = new Matrix4(0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+                        break;
+                    default:
+                        incrementalRotationMatrix = new Matrix4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+                        finalRotationMatrix = new Matrix4(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1);
+                }
+                let count = 0;
+                let currentActiveFunction = setInterval(function(){
+                    updateModelMatrix(incrementalRotationMatrix, modelMatrix);
+                    render();
+                    drawCompass();
+                    if (count >= 90 / theta){
+                        clearInterval(currentActiveFunction);
+                        updateModelMatrix(finalRotationMatrix, previousModelMatrix);
+                        render();
+                        drawCompass();
+                        rotating = false;
+                    }
+                    count++;
+                }, 50);
+            }
+            function drawCompass(){
+                ctx.beginPath();
+                ctx.moveTo((7 / 8) * width - (1 / 16) * width - 11, (1 / 8) * height - (1 / 32) * height - 12);
+                ctx.lineTo((7 / 8) * width + (1 / 16) * width + 11, (1 / 8) * height - (1 / 32) * height - 12);
+                ctx.lineTo((7 / 8) * width + (1 / 16) * width + 11, (1 / 8) * height + (1 / 32) * height + 12);
+                ctx.lineTo((7 / 8) * width - (1 / 16) * width - 11, (1 / 8) * height + (1 / 32) * height + 12);
+                ctx.closePath();
+                ctx.fillStyle = "white";
+                ctx.fill();
+                ctx.beginPath();
+                ctx.moveTo((7 / 8) * width - (1 / 16) * width, (1 / 8) * height - (1 / 32) * height);
+                ctx.lineTo((7 / 8) * width + (1 / 16) * width, (1 / 8) * height + (1 / 32) * height);
+                ctx.moveTo((7 / 8) * width + (1 / 16) * width, (1 / 8) * height - (1 / 32) * height);
+                ctx.lineTo((7 / 8) * width - (1 / 16) * width, (1 / 8) * height + (1 / 32) * height);
+                ctx.lineWidth = "2";
+                ctx.stroke();
+                ctx.fillStyle = "black";
+                ctx.font = "12px Special Elite";
+                ctx.fillText("L", (7 / 8) * width - (1 / 16) * width - (3 / 64) * width, (1 / 8) * height - (1 / 32) * height - (1 / 64) * height);
+                ctx.fillText("R", (7 / 8) * width + (1 / 16) * width + (3 / 256) * width, (1 / 8) * height + (1 / 32) * height + (3 / 64) * height);
+                ctx.fillText("B", (7 / 8) * width + (1 / 16) * width + (3 / 256) * width, (1 / 8) * height - (1 / 32) * height - (1 / 64) * height);
+                ctx.fillText("F", (7 / 8) * width - (1 / 16) * width - (3 / 64) * width, (1 / 8) * height + (1 / 32) * height + (3 / 64) * height);
+            }
+            drawCompass();
+            $("#rotatePositiveX").click(() => {
+                setupRotation(6, rotationType.CW_X);
+            });
+            $("#rotatePositiveY").click(() => {
+                setupRotation(6, rotationType.CW_Y);
+            });
+            $("#rotatePositiveZ").click(() => {
+                setupRotation(6, rotationType.CW_Z);
+            });
+            $("#rotateNegativeX").click(() => {
+                setupRotation(6, rotationType.CCW_X);
+            });
+            $("#rotateNegativeY").click(() => {
+                setupRotation(6, rotationType.CCW_Y);
+            });
+            $("#rotateNegativeZ").click(() => {
+                setupRotation(6, rotationType.CCW_Z);
+            });
+            $("#projection").change(function(){
+                let selectedOption = $(this).children("option:selected").val();
+                if (selectedOption == 2)
+                    currentProjectionMode = projectionType.Perspective;
+                else
+                    currentProjectionMode = projectionType.Orthogonal;
+                projectionMatrix = createProjectionMatrix(currentProjectionMode, projectionParameters);
+                updateModelViewProjectionMatrix(projectionMatrix, modelViewMatrix);
+                render();
+                drawCompass();
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="ManualContent">
+        <div class="section">
+            <div class="page page-bg-02">
+                <div class="page-header">
+                    <span class="page-header-doc-title">Keep Talking and Nobody Explodes Mod</span>
+                    <span class="page-header-section-title">Orientation Cube</span>
+                </div>
+                <div class="page-content">
+                    <img class="diagram" src="img/Component/Orientation Cube.svg">
+                    <h2>On the Subject of Orientation Cube</h2>
+
+                    <p class="flavour-text">If the bomb doesn’t kill us a brain haemorrhage will.</p>
+
+                    <p>
+                        In order to defuse this part of the bomb you will need good
+                        3D orientation skills. A virtual cube needs to be rotated
+                        into a specific orientation using the four keys along the bottom.
+                        Unfortunately there is no display to indicate the
+                        current orientation of the virtual cube so you will have to
+                        imagine the state of the cube yourself.</p>
+
+                    <p>
+                        The two keys in the bottom left will yaw the cube clockwise or
+                        anti-clockwise, respective to looking at the cube from the top.</p>
+
+                    <p>
+                        The two keys in the bottom right will roll the cube clockwise
+                        or anti-clockwise, respective to the virtual observer. The virtual
+                        observer’s position is indicated on the module as an eye.
+                        <em>NOTE: The virtual observer’s position may change.</em></p>
+
+                    <p>
+                        For example, if the eye is at the bottom then it is facing the
+                        ‘FRONT’ face. Pressing ‘Roll clockwise’ will place the ‘LEFT’
+                        face where the ‘TOP’ face is.
+
+                    <img class="diagram-left" src="img/Orientation Cube/top.svg">
+                    <img class="diagram-right" src="img/Orientation Cube/front.svg"></p>
+                </div>
+                <div class="page-footer relative-footer">Page 1 of 3</div>
+            </div>
+
+            <div class="page page-bg-02">
+                <div class="page-header">
+                    <span class="page-header-doc-title">Keep Talking and Nobody Explodes Mod</span>
+                    <span class="page-header-section-title">Orientation Cube</span>
+                </div>
+                <div class="page-content">
+
+                    <h3>If the serial number on the bomb contains the letter R:</h3>
+
+                    <p>
+                        Rotate the cube so that the initial left face is in the same
+                        position as the initial top face, then press the SET button.</p>
+
+                    <h3>Otherwise, if the bomb has a lit indicator with the label TRN
+                        <strong>OR</strong> it has a lit/unlit indicator with the label CAR:</h3>
+
+                    <p>
+                        Rotate the cube so that the initial bottom face is in the same
+                        position as the initial right face, then press the SET button.</p>
+
+                    <h3>Otherwise, if the bomb has a PS2 port <strong>OR</strong> there have been one or more strikes:</h3>
+
+                    <p>
+                        Rotate the cube so that the initial bottom face is in the same
+                        position as the initial front face and the initial left face
+                        is in the same position as the initial bottom face, then press
+                        the SET button.</p>
+
+                    <h3>Otherwise, if the serial number on the bomb contains either the number 7 or 8:</h3>
+
+                    <p>
+                        Rotate the cube so that the initial right face is in the same position as the
+                        initial bottom face and the initial back face is in the same position as the
+                        initial front face, then press the SET button.</p>
+
+                    <h3>Otherwise, if there are more than two batteries on the bomb
+                        <strong>OR</strong> the virtual observer’s initial position is facing the initial left face:</h3>
+
+                    <p>
+                        Rotate the cube so that the initial top face is in the same
+                        position as the initial bottom face, then press the SET button.</p>
+
+                    <h3>Otherwise:</h3>
+
+                    <p>
+                        Rotate the cube so that the initial top face is in the same
+                        position as the initial left face, then press the SET button.</p>
+
+                    <h3>On a strike:</h3>
+
+                    <p>
+                        If you get strike then the virtual cube will be reset to the
+                        initial position. Be aware you may need to select a new rule
+                        if the observer is now in a different position.</p>
+
+                </div>
+                <div class="page-footer relative-footer">Page 2 of 3</div>
+            </div>
+            <div class="page page-bg-03">
+                <div class="page-header">
+                    <span class="page-header-doc-title">Keep Talking and Nobody Explodes Mod</span>
+                    <span class="page-header-section-title">Orientation Cube</span>
+                </div>
+                <div class="page-content">
+                    <h2>The Virtual Cube</h2>
+                    <div style="text-align: center;">
+                        <canvas width = "220" height = "220" id="cubeCanvas"></canvas>
+                    </div>
+                    <button id="rotatePositiveX">CW about Right</button>
+                    <button id="rotateNegativeX">CCW about Right</button>
+                    <button id="rotatePositiveY">CW about Top</button>
+                    <button id="rotateNegativeY">CCW about Top</button>
+                    <button id="rotatePositiveZ">CW about Front</button>
+                    <button id="rotateNegativeZ">CCW about Front</button>
+                    <label for="projection">Projection:</label>
+                    <select id="projection">
+                        <option value=2>Perspective</option>
+                        <option value=1>Orthogonal</option>
+                    </select>
+                    <a href="index2.html">Hypercube Test</a>
+                    <a href="Module Listening interactive (samfundev).html">Module Listening Test</a>
+                    <a href="index4.html">WebGL Test</a>
+                    <a href="index5.html">WGC Interactive</a>
+                    <a href="Wolf, Goat, and Cabbage interactive (kavinkul).html">WGC Interactive 2</a>
+                </div>
+                <div class="page-footer relative-footer">Page 3 of 3</div>
+            </div>
+        </div>
+    </div>
+</body></html>
