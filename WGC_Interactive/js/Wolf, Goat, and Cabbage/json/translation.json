@@ -52,7 +52,8 @@
                 "To remove the selection, click on that vertex again,",
                 "You can mark certain vertex red by right click on it. Note that you will not notice any visual changes if it is already yellow.",
                 "You can click on Clear Connections button to remove all lines from the graph.",
-                "If a vertex is removed when changing graph size, the connections to it will also be removed."
+                "If a vertex is removed when changing graph size, the connections to it will also be removed.",
+                "On mobile devices, there is a checkbox that you can use to mark a vertex red."
             ],
             "CheckboxText": "Mark Vertex Red"
         },
