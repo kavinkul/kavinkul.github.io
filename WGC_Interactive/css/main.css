@@ -1,4 +1,3 @@
-
 /*
  *  Some useful numbers...
  *
@@ -127,7 +126,7 @@ body {
 
 p,
 pre {
-    margin: .5em 0 1em; /* bring top of paragraphs closer to headers */
+    margin: 0.5em 0 1em; /* bring top of paragraphs closer to headers */
 }
 
 em {
@@ -165,7 +164,9 @@ h6 {
     margin: 2.33em 0 0;
 }
 
-h2, h3, h4 {
+h2,
+h3,
+h4 {
     text-decoration: underline;
 }
 
@@ -177,18 +178,23 @@ table {
     border-collapse: collapse;
 }
 
-table, th, td {
+table,
+th,
+td {
     border: 1px solid #222;
 }
 
 @media print {
-    table, th, td {
+    table,
+    th,
+    td {
         border-color: black;
     }
 }
 
-td, th {
-    padding: .3em .6em .2em;
+td,
+th {
+    padding: 0.3em 0.6em 0.2em;
 }
 
 .new-block-formatting-context {
@@ -199,7 +205,10 @@ td, th {
     overflow: hidden;
 }
 
-.no-border, .no-border tr, .no-border tr th, .no-border tr td {
+.no-border,
+.no-border tr,
+.no-border tr th,
+.no-border tr td {
     border: none;
 }
 
@@ -212,14 +221,14 @@ td, th {
 .diagram {
     width: 5em;
     float: right;
-    margin-left: .5em;
-    margin-bottom: .5em;
+    margin-left: 0.5em;
+    margin-bottom: 0.5em;
 }
 
 [dir='rtl'] .diagram {
     float: left;
     margin-left: 0;
-    margin-right: .5em;
+    margin-right: 0.5em;
 }
 
 @media screen and (min-width: 900px), print {
@@ -244,9 +253,9 @@ td, th {
         margin: 1em auto;
         padding: 0;
         border: 1px solid #222; /* Safely using px because exists outside layout of page content */
-        box-shadow: #222 0.0em 0em 0.6em;
+        box-shadow: #222 0em 0em 0.6em;
         clear: both;
-        background-color: #FFF;
+        background-color: #fff;
         background-repeat: no-repeat;
         background-position: center;
         background-size: 100%;
@@ -263,7 +272,7 @@ td, th {
         box-shadow: none;
         max-width: none;
         min-height: initial;
-        background-color: #FFF;
+        background-color: #fff;
         background-repeat: no-repeat;
         background-position: center;
         background-size: 100%;
@@ -274,35 +283,35 @@ td, th {
 }
 
 .page-bg-01 {
-    background-image: url("../img/page-bg-noise-01.png");
+    background-image: url('../img/page-bg-noise-01.png');
 }
 
 .page-bg-02 {
-    background-image: url("../img/page-bg-noise-02.png");
+    background-image: url('../img/page-bg-noise-02.png');
 }
 
 .page-bg-03 {
-    background-image: url("../img/page-bg-noise-03.png");
+    background-image: url('../img/page-bg-noise-03.png');
 }
 
 .page-bg-04 {
-    background-image: url("../img/page-bg-noise-04.png");
+    background-image: url('../img/page-bg-noise-04.png');
 }
 
 .page-bg-05 {
-    background-image: url("../img/page-bg-noise-05.png");
+    background-image: url('../img/page-bg-noise-05.png');
 }
 
 .page-bg-06 {
-    background-image: url("../img/page-bg-noise-06.png");
+    background-image: url('../img/page-bg-noise-06.png');
 }
 
 .page-bg-07 {
-    background-image: url("../img/page-bg-noise-07.png");
+    background-image: url('../img/page-bg-noise-07.png');
 }
 
 .page-content {
-    margin: 0 .25in;
+    margin: 0 0.25in;
     padding-top: 2em;
 }
 
@@ -314,7 +323,7 @@ td, th {
 
 @media screen and (min-width: 900px), print {
     .page-content {
-        margin: 0 .75in;
+        margin: 0 0.75in;
         padding-top: 4.5em;
         min-height: 9.5in; /* Leaving 3em at the bottom for footer (0.75in) */
     }
@@ -331,8 +340,8 @@ td, th {
     display: block;
     position: relative;
     height: 0;
-    top: .25in; /* = 0.25in at 12pt (1em) */
-    margin: 0 .5in; /* = ~0.5in at 12pt (1em) */
+    top: 0.25in; /* = 0.25in at 12pt (1em) */
+    margin: 0 0.5in; /* = ~0.5in at 12pt (1em) */
 }
 
 @media screen and (max-width: 900px) {
@@ -371,8 +380,8 @@ td, th {
 
 @media screen and (min-width: 900px) {
     .relative-footer {
-        margin-top: .25in; /* = 0.25in */
-        height: .5in; /* = 0.5in */
+        margin-top: 0.25in; /* = 0.25in */
+        height: 0.5in; /* = 0.5in */
         display: block;
     }
 }
@@ -394,14 +403,16 @@ td, th {
     line-height: normal;
 }
 
-    .instructions h2, .instructions h3, .instructions h4 {
-        text-decoration: none;
-    }
+.instructions h2,
+.instructions h3,
+.instructions h4 {
+    text-decoration: none;
+}
 
-    .instructions em {
-        font-style: italic;
-        text-decoration: none;
-    }
+.instructions em {
+    font-style: italic;
+    text-decoration: none;
+}
 
 .bomb-diagram {
     text-align: center;
@@ -423,10 +434,12 @@ td, th {
 .bomb-diagram img {
     height: 11.7em; /* just barely gives enough room for all the other text */
     vertical-align: middle;
-    padding: .5em 1em;
+    padding: 0.5em 1em;
 }
 
-.bomb-diagram table, .bomb-diagram tr, .bomb-diagram td {
+.bomb-diagram table,
+.bomb-diagram tr,
+.bomb-diagram td {
     margin: 0;
     padding: 0;
     border: 0;
@@ -467,7 +480,8 @@ td, th {
     height: 45em;
 }
 
-.music-table td, .music-table th {
+.music-table td,
+.music-table th {
     padding: 0;
 }
 
@@ -491,23 +505,26 @@ td, th {
     border: none;
 }
 
-.whos-on-first-step1-table, .whos-on-first-step1-table td {
+.whos-on-first-step1-table,
+.whos-on-first-step1-table td {
     margin-left: auto;
     margin-right: auto;
     border: none;
 }
 
-    .whos-on-first-step1-table th, .whos-on-first-step1-table td {
-        font-size: 0.9em;
-        width: 6.5em;
-        padding: 0.45em 0.45em .7em .7em;
-    }
+.whos-on-first-step1-table th,
+.whos-on-first-step1-table td {
+    font-size: 0.9em;
+    width: 6.5em;
+    padding: 0.45em 0.45em 0.7em 0.7em;
+}
 
-        .whos-on-first-step1-table th table, .whos-on-first-step1-table td table {
-            width: 95%;
-            margin-left: auto;
-            margin-right: auto;
-        }
+.whos-on-first-step1-table th table,
+.whos-on-first-step1-table td table {
+    width: 95%;
+    margin-left: auto;
+    margin-right: auto;
+}
 
 .whos-on-first-look-at-display {
     background-color: black;
@@ -539,16 +556,16 @@ td, th {
     width: 105%;
 }
 
-    .whos-on-first-step2-table th {
-        padding-left: .2em;
-        padding-right: .2em;
-        padding-top: .15em;
-        padding-bottom: .15em;
-    }
+.whos-on-first-step2-table th {
+    padding-left: 0.2em;
+    padding-right: 0.2em;
+    padding-top: 0.15em;
+    padding-bottom: 0.15em;
+}
 
-    .whos-on-first-step2-table td {
-        font-size: .78em;
-    }
+.whos-on-first-step2-table td {
+    font-size: 0.78em;
+}
 
 .keypad-table {
     margin-left: auto;
@@ -560,8 +577,8 @@ td, th {
 }
 
 .keypad-table-column {
-    background-color: #FFF; /*For ensuring photocopy noise doesn't affect symbols*/
-    padding: .1em;
+    background-color: #fff; /*For ensuring photocopy noise doesn't affect symbols*/
+    padding: 0.1em;
 }
 
 .keypad-table-spacer {
@@ -575,8 +592,8 @@ td, th {
 .maze {
     width: 11em;
     height: 11em;
-    margin: .1em;
-	text-align: center;
+    margin: 0.1em;
+    text-align: center;
     margin-top: 3em;
 }
 
@@ -619,11 +636,13 @@ td, th {
     background-color: #ffffff;
 }
 
-.morse-signal-table td, .morse-signal-table th {
+.morse-signal-table td,
+.morse-signal-table th {
     border: none;
 }
 
-.morse-interpret th, .morse-interpret td {
+.morse-interpret th,
+.morse-interpret td {
     padding: 0.4em 0.3em;
 }
 
@@ -695,15 +714,15 @@ td, th {
     padding-bottom: 0.75em;
 }
 
-    #venntable td {
-        font-size: 0.75em;
-    }
-	
+#venntable td {
+    font-size: 0.75em;
+}
+
 #venninstructiontable {
     position: relative;
     top: -0.7em;
 }
-	
+
 .venn-legend-line {
     margin: 1em 0;
     width: 10em;
@@ -746,10 +765,11 @@ td, th {
     margin-right: 1.3em;
 }
 
-    .needy-knob table td, .needy-knob table th {
-        width: 1.5em;
-        text-align: center;
-    }
+.needy-knob table td,
+.needy-knob table th {
+    width: 1.5em;
+    text-align: center;
+}
 
 .needy-diagram-label {
     text-align: left;
@@ -767,20 +787,21 @@ td, th {
     font-size: 0.9em;
 }
 
-.wire-sequence td, .wire-sequence th {
+.wire-sequence td,
+.wire-sequence th {
     padding-left: 0.4em;
     padding-right: 0.4em;
 }
 
 .wire-sequence table .header {
     background-color: #222;
-    color: #FFF;
+    color: #fff;
 }
 
 .wire-sequence .blue-table {
     /* Because it's the middle table... */
-    margin-left: .3em;
-    margin-right: .3em;
+    margin-left: 0.3em;
+    margin-right: 0.3em;
 }
 
 .wire-sequence .second-col {
@@ -788,14 +809,14 @@ td, th {
 }
 
 .memory-rules p {
-    margin-top: .3em;
+    margin-top: 0.3em;
     font-size: 0.95em; /* TODO: Remove this, it's a quick hack to get printing looking nicer with our placeholder graphic design. */
 }
 
 .flavour-text {
     font-style: italic;
     font-size: 75%;
-    margin-top: .5em;
+    margin-top: 0.5em;
 }
 
 /* ==========================================================================
@@ -814,12 +835,12 @@ td, th {
     *text-indent: -9999px;
 }
 
-    .ir:before {
-        content: "";
-        display: block;
-        width: 0;
-        height: 150%;
-    }
+.ir:before {
+    content: '';
+    display: block;
+    width: 0;
+    height: 150%;
+}
 
 /*
  * Hide from both screenreaders and browsers: h5bp.com/u
@@ -870,20 +891,20 @@ td, th {
     width: 1px;
 }
 
-    /*
+/*
  * Extends the .visuallyhidden class to allow the element to be focusable
  * when navigated to via the keyboard: h5bp.com/p
  */
 
-    .visuallyhidden.focusable:active,
-    .visuallyhidden.focusable:focus {
-        clip: auto;
-        height: auto;
-        margin: 0;
-        overflow: visible;
-        position: static;
-        width: auto;
-    }
+.visuallyhidden.focusable:active,
+.visuallyhidden.focusable:focus {
+    clip: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    position: static;
+    width: auto;
+}
 
 /*
  * Hide visually and from screenreaders, but maintain layout
@@ -907,7 +928,7 @@ td, th {
 
 .clearfix:before,
 .clearfix:after {
-    content: " "; /* 1 */
+    content: ' '; /* 1 */
     display: table; /* 2 */
 }
 
@@ -943,12 +964,12 @@ td, th {
         text-decoration: underline;
     }
 
-        a[href]:after {
-            content: " (" attr(href) ")";
-        }
+    a[href]:after {
+        content: ' (' attr(href) ')';
+    }
 
     abbr[title]:after {
-        content: " (" attr(title) ")";
+        content: ' (' attr(title) ')';
     }
 
     /*
@@ -956,9 +977,9 @@ td, th {
      */
 
     .ir a:after,
-    a[href^="javascript:"]:after,
-    a[href^="#"]:after {
-        content: "";
+    a[href^='javascript:']:after,
+    a[href^='#']:after {
+        content: '';
     }
 
     pre,
@@ -1000,9 +1021,9 @@ td, th {
 /* Rule seed */
 .page-header-section-title.ruleseed-seeded {
     color: #800;
-    background: rgba(255, 0, 0, .1);
+    background: rgba(255, 0, 0, 0.1);
     border: 2px solid #f00;
-    padding: .3em .7em;
+    padding: 0.3em 0.7em;
 }
 
 .ruleseed-header {
@@ -1012,15 +1033,13 @@ td, th {
 @media screen and (max-width: 900px) {
     .ruleseed-active .ruleseed-header {
         display: block;
-        background: rgba(255, 0, 0, .1);
-        padding: .3em 0;
+        background: rgba(255, 0, 0, 0.1);
+        padding: 0.3em 0;
         font-weight: bold;
         font-size: 14pt;
         text-align: center;
     }
 }
-
-
 
 /** NOTIFICATION AND OPTIONS MENU **/
 
@@ -1033,7 +1052,7 @@ td, th {
     border-bottom: 1px solid black;
     border-right: 1px solid black;
     border-bottom-right-radius: 5px;
-    box-shadow: rgba(0,0,0,.5) 0 0 10px;
+    box-shadow: rgba(0, 0, 0, 0.5) 0 0 10px;
     font-family: sans-serif;
 }
 
@@ -1048,27 +1067,27 @@ td, th {
     border-left: none;
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
-    box-shadow: rgba(0,0,0,.5) 0 0 10px;
+    box-shadow: rgba(0, 0, 0, 0.5) 0 0 10px;
     font-family: sans-serif;
     padding: 10px 15px 15px 20px;
 }
 
-    #optionsMenu.open {
-        transform: none;
-    }
+#optionsMenu.open {
+    transform: none;
+}
 
-    #optionsMenu h2 {
-        text-decoration: none;
-    }
+#optionsMenu h2 {
+    text-decoration: none;
+}
 
-    #optionsMenu blockquote {
-        margin: 0 0 0 25px;
-    }
+#optionsMenu blockquote {
+    margin: 0 0 0 25px;
+}
 
-    #optionsMenu kbd {
-        font: inherit;
-        text-decoration: underline;
-    }
+#optionsMenu kbd {
+    font: inherit;
+    text-decoration: underline;
+}
 
 @media screen and (max-width: 900px), print {
     #pageTypeOption {
