@@ -1,0 +1,43 @@
+.node {
+    fill: black;
+    font-size: 6px;
+    text-anchor: middle;
+    text-align: center;
+    dominant-baseline: central;
+}
+
+.flexContainer {
+    display: flex;
+    justify-content: center;
+    width: 90%;
+    margin: 0.25em auto;
+}
+
+.generalUI {
+    flex: 1;
+    display: grid;
+    background-color: #808080;
+    color: white;
+    align-items: center;
+    padding: 0.5em;
+    row-gap: 0.5em;
+    text-align: center;
+    grid-template-columns: 40% 20% 40%;
+}
+
+.leftCol {
+    grid-column: 1;
+}
+.middleCol {
+    grid-column: 2;
+}
+.rightCol {
+    grid-column: 3;
+}
+
+.noTextHighlight {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
