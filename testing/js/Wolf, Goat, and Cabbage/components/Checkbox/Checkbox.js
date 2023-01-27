@@ -1,6 +1,7 @@
-import useRawIcon from "../../hooks/use-raw-icon";
+// import useRawIcon from "../../hooks/use-raw-icon";
 
 const { useId } = window.React;
+const { useRawIcon } = window.exports;
 
 function Checkbox({ label, isChecked, style, className, ...rest }) {
   const id = useId();
@@ -47,4 +48,4 @@ function Checkbox({ label, isChecked, style, className, ...rest }) {
   );
 }
 
-export default Checkbox;
+export { Checkbox };

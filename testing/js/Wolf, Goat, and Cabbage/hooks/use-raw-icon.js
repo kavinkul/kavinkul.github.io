@@ -1,9 +1,10 @@
-import RawIconContext from '../contexts/RawIcon';
+// import RawIconContext from "../contexts/RawIcon";
 
 const { useContext } = window.React;
+const { RawIconContext } = window.exports;
 
 function useRawIcon() {
-    return useContext(RawIconContext);
+  return useContext(RawIconContext);
 }
 
-export default useRawIcon;
+export { useRawIcon };

@@ -1,46 +1,42 @@
-import Graph from './components/Graph/Graph';
-import SetupTable from './components/SetupTable/SetupTable';
-import RiverTable from './components/RiverTable/RiverTable';
-import useTranslation from './hooks/use-translation';
-
 const { useState } = window.React;
+const { useTranslation, SetupTable, Graph, RiverTable } = window.exports;
 
 function App() {
-    const [chosenSpecies, setChosenSpecies] = useState([]);
-    const [size, setSize] = useState(6);
-    const [confirmedSpecies, setConfirmedSpecies] = useState([]);
-    const { isLoaded } = useTranslation();
+  const [chosenSpecies, setChosenSpecies] = useState([]);
+  const [size, setSize] = useState(6);
+  const [confirmedSpecies, setConfirmedSpecies] = useState([]);
+  const { isLoaded } = useTranslation();
 
-    const handleChange = (species) => {
-        const newSpecies = [...species];
-        setChosenSpecies(newSpecies);
-    };
+  const handleChange = (species) => {
+    const newSpecies = [...species];
+    setChosenSpecies(newSpecies);
+  };
 
-    const handleSizeChange = (newSize) => {
-        setSize(newSize);
-    };
+  const handleSizeChange = (newSize) => {
+    setSize(newSize);
+  };
 
-    const handleCopy = () => {
-        setConfirmedSpecies([...chosenSpecies]);
-    };
+  const handleCopy = () => {
+    setConfirmedSpecies([...chosenSpecies]);
+  };
 
-    const content = isLoaded ? (
-        <>
-            <SetupTable
-                chosenValues={chosenSpecies}
-                size={size}
-                onChange={handleChange}
-                onSizeChange={handleSizeChange}
-                onCopy={handleCopy}
-            />
-            <Graph size={size} chosenValues={chosenSpecies} />
-            <RiverTable chosenValues={confirmedSpecies} />
-        </>
-    ) : (
-        'Loading Application...'
-    );
+  const content = isLoaded ? (
+    <>
+      <SetupTable
+        chosenValues={chosenSpecies}
+        size={size}
+        onChange={handleChange}
+        onSizeChange={handleSizeChange}
+        onCopy={handleCopy}
+      />
+      <Graph size={size} chosenValues={chosenSpecies} />
+      <RiverTable chosenValues={confirmedSpecies} />
+    </>
+  ) : (
+    "Loading Application..."
+  );
 
-    return <div>{content}</div>;
+  return <div>{content}</div>;
 }
 
-export default App;
+export { App };

@@ -1,5 +1,8 @@
 {
   "dependencies": {
     "bulma": "^0.9.4"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-modules-umd": "^7.18.6"
   }
 }

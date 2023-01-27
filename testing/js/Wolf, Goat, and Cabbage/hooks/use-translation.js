@@ -1,9 +1,8 @@
-import TranslationContext from '../contexts/translation';
-
 const { useContext } = window.React;
+const { TranslationContext } = window.exports;
 
 function useTranslation() {
-    return useContext(TranslationContext);
+  return useContext(TranslationContext);
 }
 
-export default useTranslation;
+export { useTranslation };
