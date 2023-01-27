@@ -32,7 +32,7 @@ function Checkbox({ label, isChecked, style, className, ...rest }) {
   const finalStyle = { ...baseStyle, ...style, ...checkedStyle };
 
   return (
-    <Fragment>
+    <>
       <input
         id={id}
         name={id}
@@ -44,7 +44,7 @@ function Checkbox({ label, isChecked, style, className, ...rest }) {
       <label style={labelStyle} htmlFor={id}>
         {label}
       </label>
-    </Fragment>
+    </>
   );
 }
 
